@@ -1,0 +1,195 @@
+* {
+  margin: 0;
+  box-sizing: border-box;
+}
+
+nav {
+  width: 100%;
+  height: 5em;
+  background-color: rgb(37, 39, 53);
+  display: flex;
+  justify-content: center;
+  padding: 1em;
+}
+
+.burger-menu {
+  height: 100%;
+  width: 4em;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.burger-bar.clicked:nth-child(1) {
+  transform: rotate(45deg) translate(0.75em, 1.25em);
+  transition: ease-out 0.5s;
+}
+
+.burger-bar.clicked:nth-child(2) {
+  transform: scale(0.1);
+  transition: ease-out 0.5s;
+}
+
+.burger-bar.clicked:nth-child(3) {
+  transform: rotate(135deg) translate(-0.5em, 1em);
+  transition: ease-out 0.5s;
+}
+
+.burger-bar.unclicked {
+  transform: rotate(0) translate(0);
+  transition: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.burger-bar {
+  width: 25px;
+  height: 3px;
+  background-color: #333333;
+  margin: 5px;
+  transition: all 0.3s;
+}
+
+.burger-bar.clicked {
+  background-color: #999;
+}
+
+.menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 200px;
+  height: 100vh;
+  background-color: #fff;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5);
+  transition: all 0.3s;
+  z-index: 1000;
+  padding-top: 60px; /* Space for the navbar */
+}
+
+.menu.hidden {
+  left: -200px;
+}
+
+.menu.visible {
+  left: 0;
+}
+
+.menu ul {
+  list-style-type: none;
+  padding: 20px;
+}
+
+.menu ul li {
+  padding: 10px 0;
+}
+
+.menu ul li a {
+  text-decoration: none;
+  color: #333;
+}
+
+.create-event-button {
+  margin-bottom: 25px;
+}
+
+.modal-content h5 {
+  margin: 0;
+}
+
+.page-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.content-wrap {
+  width: 100%;
+  max-width: 100%; /* Adjust this value based on your design */
+  padding: 20px; /* Ensure equal padding on both sides */
+}
+
+.footer {
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  padding: 1rem 0;
+  position: relative;
+  width: 100%;
+}
+
+.footer-content p {
+  margin: 0.5rem 0;
+}
+
+.trademark {
+  font-size: 0.8rem;
+  vertical-align: super;
+}
+
+.events-list {
+  margin-top: 20px;
+  display: flex;
+  flex-wrap: wrap; /* Enable wrapping */
+  gap: 20px; /* Add some space between event boxes */
+}
+
+.event-box {
+  background-color: #f8f9fa;
+  border: 1px solid #ddd;
+  width: 300px; /* Set a fixed width for event boxes */
+  height: 450px; /* Set a fixed height for event boxes */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.event-box h5 {
+  margin-top: 10px;
+}
+
+.event-details {
+  margin-top: 10px; /* Add margin to details */
+}
+
+.image-container {
+  width: 100%; /* Make image container take full width of the event box */
+  max-height: 200px; /* Set max height for the image container */
+  overflow: hidden; /* Hide any overflow from the images */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.event-image {
+  width: 100%;
+  height: auto;
+  object-fit: contain; /* Ensures the image covers the area without distortion */
+}
+
+.livestream-container {
+  width: 100%;
+  text-align: center;
+  margin-top: 10px;
+  margin-bottom: 10px; /* Add space below the icon */
+}
+
+.livestream-icon {
+  margin-top: 10px;
+}
+
+.modal-image-container {
+  width: 100%; /* Full width */
+  max-height: 300px; /* Maximum height */
+  overflow: hidden; /* Hide overflow */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-event-image {
+  max-width: 100%;
+  max-height: 300px; /* Set a max height to ensure the image fits within the modal */
+  object-fit: contain; /* Ensures the image is fully visible */
+}

@@ -1,0 +1,54 @@
+/* Camera.css */
+.camera-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: #f0f0f0;
+}
+
+.camera-video {
+  width: 80%;
+  max-width: 600px;
+  border: 2px solid #000;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.camera-header {
+  margin-bottom: 20px;
+  font-size: 2rem;
+  color: #333;
+}
+
+.camera-symbol {
+  width: 150px;
+  margin-bottom: 20px;
+}
+
+.camera-controls {
+  margin-top: 20px;
+}
+
+.camera-button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  color: #fff;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+
+.camera-button:hover {
+  border-color: #646cff;
+}
+
+.camera-button:focus,
+.camera-button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
