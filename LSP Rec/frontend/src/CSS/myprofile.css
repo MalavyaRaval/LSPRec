@@ -72,6 +72,6 @@ button {
 .image-buttons input,
 .image-buttons button {
   margin-top: 5px;
-  width: 150px; /* Adjust width for better alignment */
+  width: 150px;
   margin-left: -100px;
 }

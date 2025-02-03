@@ -1,115 +1,107 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from 'react-router-dom';
 import { FaVideo } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import Navbar from "./Nav/Navbar";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
-import "../CSS/navbar.css"; // Import the CSS file
+import "../CSS/navbar.css";
 import Footer from "./Footer";
-import defaultImage from "../images/symbol.jpg"; // Import the default image
+import defaultImage from "../images/symbol.jpg";
 import axiosInstance from "./utils/axiosInstance";
-import ToastMessage from "./ToastMessage"; // Import the ToastMessage component
+import ToastMessage from "./ToastMessage";
 
 const Home = () => {
   const [events, setEvents] = useState([]);
   const [eventDetails, setEventDetails] = useState({
     name: "",
-    date: "",
-    time: "",
-    sponsor: "",
-    coSponsor: "",
-    security: "",
-    food: "",
-    custodian: "",
     description: "",
-    image: null, // Initialize as null
+    image: null,
   });
 
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] = useState(""); // Add state for success messages
+  const [successMessage, setSuccessMessage] = useState("");
+  const navigate = useNavigate();
+  const [fullName, setFullName] = useState("");
+
+  useEffect(() => {
+    const storedFullName = localStorage.getItem("fullName");
+    console.log("Stored Full Name:", storedFullName); // Debugging line
+
+    if (storedFullName) {
+      setFullName(storedFullName);
+    } else {
+      console.error("Full name not found in local storage");
+    }
+  }, []);
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setEventDetails({
       ...eventDetails,
-      [name]: value,
+      [name]: value || "",
     });
+  };
+
+  const handleStartProject = () => {
+    const projectName = eventDetails.name;
+    console.log("Full Name:", fullName); // Debugging line
+    console.log("Project Name:", projectName); // Debugging line
+    if (fullName && projectName) {
+      navigate(`/user/${fullName}/project/${projectName}`);
+    } else {
+      console.error("Full name or project name is missing");
+    }
   };
 
   const handleImageChange = (e) => {
     setEventDetails({
       ...eventDetails,
-      image: e.target.files[0], // Set the selected image file
+      image: e.target.files[0],
     });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const currentDate = new Date().toISOString().split("T")[0];
-    if (eventDetails.date < currentDate) {
-      showToast(
-        "Event date cannot be in the past. Please select a future date.",
-        "error"
-      );
-      return;
-    }
+    try {
+      const formData = new FormData();
+      Object.keys(eventDetails).forEach((key) => {
+        formData.append(key, eventDetails[key]);
+      });
 
-    const conflictEvent = events.find(
-      (event) =>
-        event.date === eventDetails.date && event.time === eventDetails.time
-    );
-    if (conflictEvent) {
-      showToast(
-        `Event "${conflictEvent.name}" is already scheduled at this time. Please choose another time.`,
-        "error"
-      );
-    } else {
-      try {
-        const formData = new FormData();
-        Object.keys(eventDetails).forEach((key) => {
-          formData.append(key, eventDetails[key]);
+      const response = await axiosInstance.post("/add-event", formData);
+
+      if (response.data && response.data.event) {
+        setEvents([...events, { ...response.data.event, isExpanded: false }]);
+        setEventDetails({
+          name: "",
+          description: "",
+          image: null,
         });
-
-        const response = await axiosInstance.post("/add-event", formData);
-
-        if (response.data && response.data.event) {
-          setEvents([...events, { ...response.data.event, isExpanded: false }]);
-          setEventDetails({
-            name: "",
-            date: "",
-            time: "",
-            sponsor: "",
-            coSponsor: "",
-            security: "",
-            food: "",
-            custodian: "",
-            description: "",
-            image: null,
-          });
-          setError("");
-          showToast("Project added successfully!", "success");
-          document.querySelector('[data-bs-dismiss="modal"]').click();
-        } else {
-          showToast("Failed to add event", "error");
-        }
-      } catch (error) {
-        if (
-          error.response &&
-          error.response.data &&
-          error.response.data.message
-        ) {
-          showToast(error.response.data.message, "error");
-        } else {
-          showToast("Error adding Project: " + error.message, "error");
-        }
+        setError("");
+        showToast("Project added successfully!", "success");
+        document.querySelector('[data-bs-dismiss="modal"]').click();
+      } else {
+        showToast("Failed to add event", "error");
+      }
+    } catch (error) {
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
+        showToast(error.response.data.message, "error");
+      } else {
+        showToast("Error adding Project: " + error.message, "error");
       }
     }
   };
 
   const handleDelete = async (eventId) => {
-    if (window.confirm("Are you sure you want to delete this event?")) {
+    if (window.confirm("Are you sure you want to delete this Project?")) {
       axiosInstance
         .delete(`/delete-event/${eventId}`)
         .then((response) => {
@@ -215,118 +207,47 @@ const Home = () => {
                 ></button>
               </div>
               <div className="modal-body">
-                {/*error && <div className="alert alert-danger">{error}</div>*/}
                 {successMessage && (
                   <div className="alert alert-success">{successMessage}</div>
                 )}
                 <form onSubmit={handleSubmit}>
-                  <div className="form-fields">
-                    <label>
-                      Project Name:
+                  <div className="form-fields space-y-4">
+                    <div>
+                      <label className="block font-medium text-gray-700">Project Name:</label>
                       <input
                         type="text"
                         name="name"
-                        className="form-control"
+                        className="form-control mt-1 p-2 border border-gray-300 rounded-md w-full"
                         value={eventDetails.name}
                         onChange={handleChange}
                         required
                       />
-                    </label>
-                    <label>
-                      Date:
-                      <input
-                        type="date"
-                        name="date"
-                        className="form-control"
-                        value={eventDetails.date}
-                        onChange={handleChange}
-                        required
-                      />
-                    </label>
-                    <label>
-                      Time:
-                      <input
-                        type="time"
-                        name="time"
-                        className="form-control"
-                        value={eventDetails.time}
-                        onChange={handleChange}
-                        required
-                      />
-                    </label>
-                    <label>
-                      Goals:
-                      <input
-                        type="text"
-                        name="sponsor"
-                        className="form-control"
-                        value={eventDetails.sponsor}
-                        onChange={handleChange}
-                        required
-                      />
-                    </label>
-                    <label>
-                      Stakeholder:
-                      <input
-                        type="text"
-                        name="coSponsor"
-                        className="form-control"
-                        value={eventDetails.coSponsor}
-                        onChange={handleChange}
-                      />
-                    </label>
-                    <label>
-                      Comments:
-                      <input
-                        type="text"
-                        name="security"
-                        className="form-control"
-                        value={eventDetails.security}
-                        onChange={handleChange}
-                      />
-                    </label>
-                    <label>
-                      Users:
-                      <input
-                        type="text"
-                        name="food"
-                        className="form-control"
-                        value={eventDetails.food}
-                        onChange={handleChange}
-                      />
-                    </label>
-                    <label>
-                      Sharing:
-                      <input
-                        type="text"
-                        name="custodian"
-                        className="form-control"
-                        value={eventDetails.custodian}
-                        onChange={handleChange}
-                      />
-                    </label>
-                    <label>
-                      Description:
+                    </div>
+
+                    <div>
+                      <label className="block font-medium text-gray-700">Description:</label>
                       <textarea
                         name="description"
-                        className="form-control"
+                        className="form-control mt-1 p-2 border border-gray-300 rounded-md w-full"
                         value={eventDetails.description}
                         onChange={handleChange}
                         required
                       ></textarea>
-                    </label>
-                    <label>
-                      Image:
+                    </div>
+
+                    <div>
+                      <label className="block font-medium text-gray-700">Image:</label>
                       <input
                         type="file"
                         name="image"
-                        className="form-control"
+                        className="form-control mt-1 p-2 border border-gray-300 rounded-md w-full"
                         onChange={handleImageChange}
                         accept="image/*"
                       />
-                    </label>
+                    </div>
                   </div>
-                  <button type="submit" className="btn btn-primary mt-3">
+
+                  <button type="submit" className="btn btn-primary mt-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
                     Submit
                   </button>
                 </form>
@@ -349,13 +270,7 @@ const Home = () => {
             <div key={index} className="event-box p-3 mb-3 border rounded">
               <div className="image-container">
                 <img
-                  src={
-                    event.image
-                      ? typeof event.image === "string"
-                        ? event.image
-                        : URL.createObjectURL(event.image)
-                      : defaultImage
-                  }
+                  src={event.image || defaultImage}
                   alt="Event"
                   className="img-fluid event-image"
                 />
@@ -374,9 +289,9 @@ const Home = () => {
                 Delete
               </button>
               <div className="livestream-container">
-                <Link to="/camera" className="btn btn-link livestream-icon">
+                <button onClick={handleStartProject} className="btn btn-link livestream-icon">
                   Start Project
-                </Link>
+                </button>
               </div>
             </div>
           ))}
@@ -396,13 +311,6 @@ const Home = () => {
                 ></button>
               </div>
               <div className="modal-body">
-                <p>Date: {selectedEvent.date}</p>
-                <p>Time: {selectedEvent.time}</p>
-                <p>Sponsor: {selectedEvent.sponsor}</p>
-                <p>Co-Sponsor: {selectedEvent.coSponsor}</p>
-                <p>Security: {selectedEvent.security}</p>
-                <p>Food: {selectedEvent.food}</p>
-                <p>Custodian: {selectedEvent.custodian}</p>
                 <p>Description: {selectedEvent.description}</p>
                 <div className="image-container">
                   <img

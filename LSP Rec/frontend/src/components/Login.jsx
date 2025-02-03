@@ -4,11 +4,22 @@ import { Link, useNavigate } from "react-router-dom";
 import "../CSS/Login.css";
 import Navbar from "./Nav/Navbar";
 import Footer from "./Footer";
+import defaultImage from "../images/symbol.jpg"; // Import the default image
+import ToastMessage from "./ToastMessage"; // Import the ToastMessage component
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
+  const [events, setEvents] = useState([]);
+  const [eventDetails, setEventDetails] = useState({
+    name: "",
+    description: "",
+    image: null, // Initialize as null
+  });
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState(""); // Add state for success messages
 
   const navigate = useNavigate();
 
@@ -33,7 +44,9 @@ const Login = () => {
 
       if (response.data && response.data.accessToken) {
         localStorage.setItem("token", response.data.accessToken);
-        console.log("Login successful, navigating to /home"); // Debugging line
+        console.log("User data:", response.data.user);
+        localStorage.setItem("fullName", response.data.user.fullName); // Ensure fullName exists
+        
         navigate("/home");
       } else {
         setError("Invalid response from server");

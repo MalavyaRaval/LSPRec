@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Navbar from './Nav/Navbar';
 import Footer from './Footer';
 import '../CSS/myprofile.css';
+import axiosInstance from './utils/axiosInstance';
 
 const states = [
   'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'Florida',
@@ -16,9 +17,7 @@ const MyProfile = () => {
   const [user, setUser] = useState({
     name: '',
     email: '',
-    phone: '',
     address: '',
-    address2: '',
     city: '',
     state: '',
     zip: '',
@@ -28,19 +27,19 @@ const MyProfile = () => {
   const [preview, setPreview] = useState('');
 
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem('user')) || {
-      name: '',
-      email: '',
-      phone: '',
-      address: '',
-      address2: '',
-      city: '',
-      state: '',
-      zip: '',
-      profilePicture: '',
+    const fetchUserData = async () => {
+      try {
+        const response = await axiosInstance.get('/get-user');
+        if (response.data && response.data.user) {
+          setUser(response.data.user);
+          setPreview(response.data.user.profilePicture);
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
     };
-    setUser(storedUser);
-    setPreview(storedUser.profilePicture);
+
+    fetchUserData();
   }, []);
 
   const handleChange = (e) => {
@@ -74,9 +73,14 @@ const MyProfile = () => {
     setPreview('');
   };
 
-  const handleSave = () => {
-    localStorage.setItem('user', JSON.stringify(user));
-    setEditing(false);
+  const handleSave = async () => {
+    try {
+      await axiosInstance.put('/edit-account', user);
+      localStorage.setItem('user', JSON.stringify(user));
+      setEditing(false);
+    } catch (error) {
+      console.error('Error saving user data:', error);
+    }
   };
 
   return (
@@ -104,23 +108,15 @@ const MyProfile = () => {
                 <div>
                   <div className="form-group">
                     <label>Name:</label>
-                    <input type="text" name="name" className="form-control" value={user.name} onChange={handleChange} />
+                    <input type="text" name="fullName" className="form-control" value={user.fullName} onChange={handleChange} />
                   </div>
                   <div className="form-group">
                     <label>Email:</label>
                     <input type="email" name="email" className="form-control" value={user.email} onChange={handleChange} />
                   </div>
                   <div className="form-group">
-                    <label>Phone:</label>
-                    <input type="text" name="phone" className="form-control" value={user.phone} onChange={handleChange} />
-                  </div>
-                  <div className="form-group">
                     <label>Address:</label>
                     <input type="text" name="address" className="form-control" value={user.address} onChange={handleChange} />
-                  </div>
-                  <div className="form-group">
-                    <label>Address 2:</label>
-                    <input type="text" name="address2" className="form-control" value={user.address2} onChange={handleChange} />
                   </div>
                   <div className="form-group">
                     <label>City:</label>
@@ -144,11 +140,9 @@ const MyProfile = () => {
                 </div>
               ) : (
                 <div>
-                  <p><strong>Name:</strong> <span>{user.name}</span></p>
+                  <p><strong>Name:</strong> <span>{user.fullName}</span></p>
                   <p><strong>Email:</strong> <span>{user.email}</span></p>
-                  <p><strong>Phone:</strong> <span>{user.phone}</span></p>
                   <p><strong>Address:</strong> <span>{user.address}</span></p>
-                  <p><strong>Address 2:</strong> <span>{user.address2}</span></p>
                   <p><strong>City:</strong> <span>{user.city}</span></p>
                   <p><strong>State:</strong> <span>{user.state}</span></p>
                   <p><strong>Zip:</strong> <span>{user.zip}</span></p>

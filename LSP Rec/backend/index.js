@@ -1,5 +1,6 @@
 require("dotenv").config();
-
+const multer = require("multer");
+const path = require("path");
 const config = require("./config.json");
 const mongoose = require("mongoose");
 
@@ -18,6 +19,33 @@ const router = express.Router();
 
 app.use(express.json());
 app.use(cors({ origin: "*" }));
+app.use('/uploads', express.static('uploads'));
+
+// imgage
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/");
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname)); 
+  },
+});
+
+const upload = multer({
+  storage: storage,
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = /jpeg|jpg|png|gif/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+
+    if (extname && mimetype) {
+      return cb(null, true);
+    } else {
+      return cb(new Error("Only image files are allowed"), false);
+    }
+  },
+}).single("image"); // 'image' is the field name for the uploaded file
+
 
 // Middleware to check if user is authenticated
 const isAuthenticated = (req, res, next) => {
@@ -34,7 +62,7 @@ app.get("/", (req, res) => {
 
 // Create new Account
 app.post("/create-account", async (req, res) => {
-  const { fullName, email, password, address, address2, city, state, zip } =
+  const { fullName, email, password, address, city, state, zip } =
     req.body;
 
   if (!fullName || !email || !password || !address || !city || !state || !zip) {
@@ -54,9 +82,8 @@ app.post("/create-account", async (req, res) => {
   const user = new User({
     fullName,
     email,
-    password, // Store password as plain text
+    password,
     address,
-    address2,
     city,
     state,
     zip,
@@ -134,7 +161,6 @@ app.get("/get-user", authenticationToken, async (req, res) => {
         fullName: user.fullName,
         email: user.email,
         address: user.address,
-        address2: user.address2,
         city: user.city,
         state: user.state,
         zip: user.zip,
@@ -149,41 +175,35 @@ app.get("/get-user", authenticationToken, async (req, res) => {
 });
 
 // Add Event
-app.post("/add-event", authenticationToken, async (req, res) => {
-  const {
-    name,
-    date,
-    time,
-    sponsor,
-    coSponsor,
-    security,
-    food,
-    custodian,
-    description,
-    image,
-  } = req.body;
-  const userId = req.user.userId;
+app.post("/add-event", authenticationToken, (req, res) => {
+  upload(req, res, async (err) => {
+    if (err) {
+      return res.status(400).json({
+        error: true,
+        message: err.message,
+      });
+    }
 
-  if (!name || !date || !description) {
-    return res.status(400).json({
-      error: true,
-      message: "Name, Date, and Description are required",
-    });
-  }
-
+    app.post("/add-event", authenticationToken, upload, async (req, res) => {
   try {
+    const { name, description } = req.body;
+    const image = req.file ? `/uploads/${req.file.filename}` : null; // Return the relative URL
+    const userId = req.user.userId;
+
+    // Validate required fields
+    if (!name || !description) {
+      return res.status(400).json({
+        error: true,
+        message: "Name and description are required",
+      });
+    }
+
+    // Create and save the event
     const event = new Event({
       name,
-      date,
-      time,
-      sponsor,
-      coSponsor,
-      security,
-      food,
-      custodian,
       description,
       image,
-      createdBy: userId, // Add the userId to the event
+      createdBy: userId,
     });
 
     await event.save();
@@ -191,15 +211,44 @@ app.post("/add-event", authenticationToken, async (req, res) => {
     return res.json({
       error: false,
       event,
-      message: "Project added successfully",
+      message: "Event added successfully",
     });
   } catch (error) {
-    console.error("Error adding Project:", error);
+    console.error("Error adding Event:", error);
     return res.status(500).json({
       error: true,
       message: "Internal Server Error",
     });
   }
+});
+
+    const { name, description } = req.body;
+    const image = req.file ? `/uploads/${req.file.filename}` : null; // Return the relative URL
+    const userId = req.user.userId;
+
+    try {
+      const event = new Event({
+        name,
+        description,
+        image, // Save the path to the image file
+        createdBy: userId,
+      });
+
+      await event.save();
+
+      return res.json({
+        error: false,
+        event,
+        message: "Event added successfully",
+      });
+    } catch (error) {
+      console.error("Error adding Event:", error);
+      return res.status(500).json({
+        error: true,
+        message: "Internal Server Error",
+      });
+    }
+  });
 });
 
 // Edit Account
@@ -271,14 +320,14 @@ app.delete("/delete-event/:eventId", authenticationToken, async (req, res) => {
     const event = await Event.findOne({ _id: eventId });
 
     if (!event) {
-      return res.status(404).json({ error: true, message: "Event not found" });
+      return res.status(404).json({ error: true, message: "Project not found" });
     }
 
     // Check if the event was created by the current user
     if (event.createdBy.toString() !== req.user.userId.toString()) {
       return res.status(403).json({
         error: true,
-        message: "You do not have permission to delete this event",
+        message: "You do not have permission to delete this Project",
       });
     }
 
@@ -286,7 +335,7 @@ app.delete("/delete-event/:eventId", authenticationToken, async (req, res) => {
 
     return res.json({
       error: false,
-      message: "Event deleted successfully",
+      message: "Project deleted successfully",
     });
   } catch (error) {
     return res.status(500).json({

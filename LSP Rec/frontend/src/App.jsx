@@ -6,8 +6,8 @@ import Login from './components/Login.jsx';
 import Home from './components/Home.jsx';
 import AboutUs from './components/aboutus.jsx';
 import Intro from './components/Intro.jsx';
-import Camera from './components/Camera.jsx';
 import MyProfile from './components/MyProfile.jsx';
+import ProjectPage from './components/ProjectPage.jsx';
 
 const App = () => {
   return (
@@ -18,8 +18,8 @@ const App = () => {
         <Route path="/myprofile" element={<MyProfile />} />
         <Route path="/home" element={<Home />} />
         <Route path="/aboutus" element={<AboutUs />} />
-        <Route path="/camera" element={<Camera />} />
         <Route path="/" element={<Intro />} />
+        <Route path="/user/:username/project/:projectname" element={<ProjectPage />} /> {/* Add this route */}
       </Routes>
     </Router>
   );

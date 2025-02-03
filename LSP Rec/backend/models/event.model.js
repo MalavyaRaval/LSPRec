@@ -2,13 +2,6 @@ const mongoose = require("mongoose");
 
 const eventSchema = new mongoose.Schema({
   name: String,
-  date: String,
-  time: String,
-  sponsor: String,
-  coSponsor: String,
-  security: String,
-  food: String,
-  custodian: String,
   description: String,
   image: String,
   createdBy: {

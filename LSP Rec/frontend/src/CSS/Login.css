@@ -9,11 +9,11 @@
 }
 
 .btn-link {
-  text-decoration: none; /* Remove underline from link */
+  text-decoration: none; 
 }
 
 .btn-link button {
-  color: white; /* Set the button text color to white */
+  color: white; 
 }
 
 .footer {

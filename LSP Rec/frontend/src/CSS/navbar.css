@@ -163,11 +163,10 @@ nav {
 }
 
 .event-image {
-  width: 100%;
+  max-width: 100%;
   height: auto;
-  object-fit: contain; /* Ensures the image covers the area without distortion */
+  display: block;
 }
-
 .livestream-container {
   width: 100%;
   text-align: center;

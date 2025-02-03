@@ -1,4 +1,3 @@
-// Navbar.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../CSS/navbar.css';
@@ -22,10 +21,8 @@ const Navbar = () => {
     };
 
     const handleSignOut = () => {
-        // Clear user authentication data (e.g., tokens)
-        localStorage.removeItem('authToken'); // Adjust this based on how you're storing the token
+        localStorage.removeItem('authToken');
 
-        // Redirect to login page
         navigate('/login');
     };
 
