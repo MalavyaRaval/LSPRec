@@ -24,38 +24,28 @@ const Home = () => {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const navigate = useNavigate();
-  const [fullName, setFullName] = useState("");
-
-  useEffect(() => {
-    const storedFullName = localStorage.getItem("fullName");
-    console.log("Stored Full Name:", storedFullName); // Debugging line
-
-    if (storedFullName) {
-      setFullName(storedFullName);
-    } else {
-      console.error("Full name not found in local storage");
-    }
-  }, []);
-
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setEventDetails({
       ...eventDetails,
-      [name]: value || "",
+      [name]: value,
     });
   };
 
-  const handleStartProject = () => {
-    const projectName = eventDetails.name;
-    console.log("Full Name:", fullName); // Debugging line
-    console.log("Project Name:", projectName); // Debugging line
-    if (fullName && projectName) {
-      navigate(`/user/${fullName}/project/${projectName}`);
-    } else {
-      console.error("Full name or project name is missing");
-    }
-  };
+const handleStartProject = () => {
+  const projectName = eventDetails.name;
+  const fullName = localStorage.getItem("fullName"); // Retrieve fullName from localStorage
+  console.log("Full Name:", fullName);  // Add this line to check if fullName exists in localStorage
+  console.log("Project Name:", projectName);  // Check if projectName is correct
+
+  if (fullName && projectName) {
+    navigate(`/user/${fullName}/project/${projectName}`);
+  } else {
+    console.error("Full name or project name is missing");
+  }
+};
+
 
   const handleImageChange = (e) => {
     setEventDetails({

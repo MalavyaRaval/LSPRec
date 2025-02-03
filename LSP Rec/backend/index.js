@@ -33,6 +33,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage: storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // Limit file size to 10MB
   fileFilter: (req, file, cb) => {
     const allowedTypes = /jpeg|jpg|png|gif/;
     const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
@@ -82,7 +83,7 @@ app.post("/create-account", async (req, res) => {
   const user = new User({
     fullName,
     email,
-    password,
+    password, // Store password as plain text
     address,
     city,
     state,
@@ -107,38 +108,55 @@ app.post("/create-account", async (req, res) => {
   });
 });
 
-// Login
+
+// Login endpoint (backend)
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
-
-  if (!email || !password) {
-    return res
-      .status(400)
-      .json({ error: true, message: "Email and Password are required" });
-  }
-
   const user = await User.findOne({ email });
 
-  if (!user || user.password !== password) {
-    return res
-      .status(400)
-      .json({ error: true, message: "Invalid credentials" });
+  if (user && user.password === password) {
+    const accessToken = jwt.sign({ userId: user._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "6000m" });
+    return res.json({
+      accessToken,
+      fullName: user.fullName, // Send fullName as part of the response
+    });
+  } else {
+    return res.status(400).json({ message: "Invalid credentials" });
   }
-
-  const accessToken = jwt.sign(
-    { userId: user._id },
-    process.env.ACCESS_TOKEN_SECRET,
-    {
-      expiresIn: "6000m",
-    }
-  );
-
-  return res.json({
-    error: false,
-    message: "Login Successful",
-    accessToken,
-  });
 });
+
+// Login
+// app.post("/login", async (req, res) => {
+//   const { email, password } = req.body;
+
+//   if (!email || !password) {
+//     return res
+//       .status(400)
+//       .json({ error: true, message: "Email and Password are required" });
+//   }
+
+//   const user = await User.findOne({ email });
+
+//   if (!user || user.password !== password) {
+//     return res
+//       .status(400)
+//       .json({ error: true, message: "Invalid credentials" });
+//   }
+
+//   const accessToken = jwt.sign(
+//     { userId: user._id },
+//     process.env.ACCESS_TOKEN_SECRET,
+//     {
+//       expiresIn: "6000m",
+//     }
+//   );
+
+//   return res.json({
+//     error: false,
+//     message: "Login Successful",
+//     accessToken,
+//   });
+// });
 
 // Get User
 app.get("/get-user", authenticationToken, async (req, res) => {
@@ -183,44 +201,6 @@ app.post("/add-event", authenticationToken, (req, res) => {
         message: err.message,
       });
     }
-
-    app.post("/add-event", authenticationToken, upload, async (req, res) => {
-  try {
-    const { name, description } = req.body;
-    const image = req.file ? `/uploads/${req.file.filename}` : null; // Return the relative URL
-    const userId = req.user.userId;
-
-    // Validate required fields
-    if (!name || !description) {
-      return res.status(400).json({
-        error: true,
-        message: "Name and description are required",
-      });
-    }
-
-    // Create and save the event
-    const event = new Event({
-      name,
-      description,
-      image,
-      createdBy: userId,
-    });
-
-    await event.save();
-
-    return res.json({
-      error: false,
-      event,
-      message: "Event added successfully",
-    });
-  } catch (error) {
-    console.error("Error adding Event:", error);
-    return res.status(500).json({
-      error: true,
-      message: "Internal Server Error",
-    });
-  }
-});
 
     const { name, description } = req.body;
     const image = req.file ? `/uploads/${req.file.filename}` : null; // Return the relative URL

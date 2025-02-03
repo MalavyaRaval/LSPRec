@@ -4,8 +4,8 @@ import { Link, useNavigate } from "react-router-dom";
 import "../CSS/Login.css";
 import Navbar from "./Nav/Navbar";
 import Footer from "./Footer";
-import defaultImage from "../images/symbol.jpg"; // Import the default image
-import ToastMessage from "./ToastMessage"; // Import the ToastMessage component
+import defaultImage from "../images/symbol.jpg";
+import ToastMessage from "./ToastMessage";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -15,11 +15,11 @@ const Login = () => {
   const [eventDetails, setEventDetails] = useState({
     name: "",
     description: "",
-    image: null, // Initialize as null
+    image: null,
   });
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [successMessage, setSuccessMessage] = useState(""); // Add state for success messages
+  const [successMessage, setSuccessMessage] = useState("");
 
   const navigate = useNavigate();
 
@@ -44,10 +44,17 @@ const Login = () => {
 
       if (response.data && response.data.accessToken) {
         localStorage.setItem("token", response.data.accessToken);
-        console.log("User data:", response.data.user);
-        localStorage.setItem("fullName", response.data.user.fullName); // Ensure fullName exists
-        
-        navigate("/home");
+
+        // Ensure fullName is available in the response data
+        if (response.data.fullName) {
+          // Save fullName to localStorage
+          localStorage.setItem("fullName", response.data.fullName);
+          console.log("Full Name saved to LocalStorage:", response.data.fullName);
+        } else {
+          console.error("Full name not found in the response data.");
+        }
+
+        navigate("/home"); // Redirect to home or another page after successful login
       } else {
         setError("Invalid response from server");
       }
@@ -68,8 +75,7 @@ const Login = () => {
         <div className="content-wrap">
           <div className="form-container">
             <h2>Login Page</h2>
-            {error && <p className="error">{error}</p>}{" "}
-            {/* Display error message */}
+            {error && <p className="error">{error}</p>} {/* Display error message */}
             <form className="row g-3" onSubmit={handleSubmit}>
               <div className="col-md-12 mb-3">
                 <label htmlFor="inputEmail" className="form-label">
@@ -106,8 +112,7 @@ const Login = () => {
                     to="/signup"
                     className="font-medium text-primary underline"
                   >
-                    {" "}
-                    Create an Account{" "}
+                    Create an Account
                   </Link>
                 </p>
               </div>
