@@ -1,58 +1,81 @@
-import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import axiosInstance from "./utils/axiosInstance";
+import React from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import Navbar from "./Nav/Navbar";
+import Footer from "./Footer";
+import ProjectTree from "./ProjectTree";
+import "../CSS/projectpage.css";
 
 const ProjectPage = () => {
   const { username, projectname } = useParams();
-  const [project, setProject] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    // Try to fetch project details from the backend
-    axiosInstance
-      .get(`/get-project/${username}/${projectname}`)
-      .then((response) => {
-        // Assume the API returns { project: { ... } } if it exists
-        setProject(response.data.project);
-        setLoading(false);
-      })
-      .catch((err) => {
-        // If the error status is 404, assume it's a new project with no details yet.
-        if (err.response && err.response.status === 404) {
-          setProject(null);
-          setError(""); // Clear error so that we render the default page
-        } else {
-          setError(
-            "Error fetching project details: " +
-              (err.response?.data?.message || err.message)
-          );
-        }
-        setLoading(false);
-      });
-  }, [username, projectname]);
+  const projectSlug = projectname
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w-]+/g, '');
 
-  if (loading) {
-    return <div>Loading project...</div>;
-  }
+  // Ideally, evaluatorName comes from your backend or user context.
+  const storedFullName = localStorage.getItem("fullName")?.trim();
+  const evaluatorName = storedFullName;
+
+  const handleNav = (action) => {
+    if (action === "projects") {
+      navigate("/home");
+    } else if (action === "validation" || action === "exit") {
+      navigate("/");
+    } else {
+      console.log(`Navigate to ${action}`);
+    }
+  };
 
   return (
-    <div className="project-page p-4">
-      <h1 className="text-2xl font-bold">
-        {project ? project.name : projectname}
-      </h1>
-      {error && <div className="alert alert-danger">{error}</div>}
-      {!project ? (
-        <div>
-          <p>No project details found. Start building your project!</p>
-          {/* Here you can add a form or any default content to let the user edit/add details */}
+    <div className="min-h-screen bg-gray-100 p-4">
+      {/* Navbar at the top */}
+      <Navbar />
+
+      {/* Top Navigation Section */}
+      <div className="flex items-center justify-between bg-white shadow-md p-3 rounded mb-4">
+        <div className="flex items-center gap-2">
+          <span className="text-lg font-semibold text-gray-800">LSP Rec</span>
         </div>
-      ) : (
-        <div>
-          <p>{project.description}</p>
-          {/* Render additional project details if needed */}
+        <div className="flex items-center gap-4">
+          <button
+            className="px-4 py-2 bg-blue-500 text-black rounded hover:bg-blue-600"
+            onClick={() => handleNav("projects")}
+          >
+            All Projects
+          </button>
+          <button
+            className="px-4 py-2 bg-green-500 text-black rounded hover:bg-green-600"
+            onClick={() => handleNav("validation")}
+          >
+            Validation
+          </button>
+          <button
+            className="px-4 py-2 bg-red-500 text-black rounded hover:bg-red-600"
+            onClick={() => handleNav("exit")}
+          >
+            Exit
+          </button>
+      </div>
+
+      {/* Project and Evaluator Information */}
+      <div className="mb-4">
+        <p className="text-lg text-gray-700">
+          <strong>User:</strong> {evaluatorName}
+        </p>
+        <p className="text-lg text-gray-700">
+          <strong>Project:</strong> {projectname.toUpperCase()}
+        </p>
+      </div>
+
+        {/* Main Content (Interactive Tree / Editing Form) */}
+        <div className="bg-white p-6 rounded shadow">
+        <ProjectTree projectId={projectSlug} />
         </div>
-      )}
+      </div>
+
+      <Footer />
     </div>
   );
 };

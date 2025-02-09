@@ -1,0 +1,85 @@
+.tree-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+  }
+  
+  .tree-branch {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 10px 0;
+    position: relative;
+  }
+  
+  .node {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #4caf50;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    cursor: pointer;
+    margin: 10px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .node:hover {
+    background-color: #388e3c;
+  }
+  
+  .node-options {
+    position: absolute;
+    top: 40px;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    display: flex;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    padding: 5px;
+  }
+  
+  .node-options button {
+    background: none;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  
+  .node-options button:hover {
+    background: #f0f0f0;
+  }
+  
+  .children-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 10px;
+  }
+  
+  .connector {
+    width: 2px;
+    height: 20px;
+    background-color: black;
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  button {
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+  }
+  
+  input {
+    border: 1px solid #ccc;
+    padding: 5px;
+    border-radius: 4px;
+  }
+  

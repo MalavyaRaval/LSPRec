@@ -4,8 +4,10 @@ const path = require("path");
 const config = require("./config.json");
 const mongoose = require("mongoose");
 
-mongoose.connect(config.connectionString);
-
+mongoose.connect(config.connectionString || process.env.MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+});
 const User = require("./models/user.model");
 const Event = require("./models/event.model");
 
@@ -17,9 +19,15 @@ const { authenticationToken } = require("./utilities");
 const app = express();
 const router = express.Router();
 
+const Project = require("./models/Project"); // Add this line with other model imports
+const projectsRouter = require("./routes/projects"); // Add this with other requires
+
 app.use(express.json());
 app.use(cors({ origin: "*" }));
 app.use('/uploads', express.static('uploads'));
+
+// Add this with your other route middlewares
+app.use('/api/projects', projectsRouter); // Add this line after the other app.use() calls
 
 // imgage
 const storage = multer.diskStorage({
@@ -125,39 +133,6 @@ app.post("/login", async (req, res) => {
   }
 });
 
-// Login
-// app.post("/login", async (req, res) => {
-//   const { email, password } = req.body;
-
-//   if (!email || !password) {
-//     return res
-//       .status(400)
-//       .json({ error: true, message: "Email and Password are required" });
-//   }
-
-//   const user = await User.findOne({ email });
-
-//   if (!user || user.password !== password) {
-//     return res
-//       .status(400)
-//       .json({ error: true, message: "Invalid credentials" });
-//   }
-
-//   const accessToken = jwt.sign(
-//     { userId: user._id },
-//     process.env.ACCESS_TOKEN_SECRET,
-//     {
-//       expiresIn: "6000m",
-//     }
-//   );
-
-//   return res.json({
-//     error: false,
-//     message: "Login Successful",
-//     accessToken,
-//   });
-// });
-
 // Get User
 app.get("/get-user", authenticationToken, async (req, res) => {
   const userId = req.user.userId;
@@ -196,21 +171,26 @@ app.get("/get-user", authenticationToken, async (req, res) => {
 app.post("/add-event", authenticationToken, (req, res) => {
   upload(req, res, async (err) => {
     if (err) {
+      console.error("Multer error:", err);
       return res.status(400).json({
         error: true,
         message: err.message,
       });
     }
 
+    console.log("Request body:", req.body);      // Log text fields
+    console.log("Uploaded file:", req.file);       // Log file details
+
     const { name, description } = req.body;
-    const image = req.file ? `/uploads/${req.file.filename}` : null; // Return the relative URL
+    // If a file was uploaded, its path will be stored here; otherwise, null
+    const image = req.file ? `/uploads/${req.file.filename}` : null;
     const userId = req.user.userId;
 
     try {
       const event = new Event({
         name,
         description,
-        image, // Save the path to the image file
+        image, // Save the relative URL if the file exists
         createdBy: userId,
       });
 
@@ -230,6 +210,7 @@ app.post("/add-event", authenticationToken, (req, res) => {
     }
   });
 });
+
 
 // Edit Account
 app.put("/edit-account", authenticationToken, async (req, res) => {

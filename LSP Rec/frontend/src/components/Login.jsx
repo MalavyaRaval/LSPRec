@@ -4,22 +4,12 @@ import { Link, useNavigate } from "react-router-dom";
 import "../CSS/Login.css";
 import Navbar from "./Nav/Navbar";
 import Footer from "./Footer";
-import defaultImage from "../images/symbol.jpg";
-import ToastMessage from "./ToastMessage";
+
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
-  const [events, setEvents] = useState([]);
-  const [eventDetails, setEventDetails] = useState({
-    name: "",
-    description: "",
-    image: null,
-  });
-  const [selectedEvent, setSelectedEvent] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
 
   const navigate = useNavigate();
 

@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom';
-import { FaVideo } from "react-icons/fa";
-import { Link } from "react-router-dom";
 import Navbar from "./Nav/Navbar";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
@@ -34,21 +32,15 @@ const Home = () => {
   };
 
   const handleStartProject = (project) => {
-    // Use the project object passed in to get the project name
-    const projectName = project.name.trim();
-    // Retrieve the user's full name from localStorage (ensure it's saved on login/signup)
+    // Use the project ID from the backend response
+    const projectId = project._id; // Use MongoDB _id or your project slug
     const storedFullName = localStorage.getItem("fullName")?.trim();
-    console.log("Full Name from localStorage:", storedFullName);
-    console.log("Project Name:", projectName);
-  
-    if (storedFullName && projectName) {
-      // Sanitize: replace spaces with hyphens and convert to lower case for URL friendliness
+    
+    if (storedFullName && projectId) {
       const formattedFullName = storedFullName.replace(/\s+/g, "-").toLowerCase();
-      const formattedProjectName = projectName.replace(/\s+/g, "-").toLowerCase();
-      navigate(`/user/${formattedFullName}/project/${formattedProjectName}`);
+      navigate(`/user/${formattedFullName}/project/${projectId}`);
     } else {
-      console.error("Full name or project name is missing");
-      showToast("Full name or project name is missing", "error");
+      showToast("Full name or project ID is missing", "error");
     }
   };
   
@@ -65,15 +57,31 @@ const Home = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const formData = new FormData();
-      Object.keys(eventDetails).forEach((key) => {
-        formData.append(key, eventDetails[key]);
+      // First create the project structure
+      const projectResponse = await axiosInstance.post("/api/projects", {
+        projectName: eventDetails.name,
       });
-
-      const response = await axiosInstance.post("/add-event", formData);
-
-      if (response.data && response.data.event) {
-        setEvents([...events, { ...response.data.event, isExpanded: false }]);
+  
+      // Then create the event with the project reference
+      const formData = new FormData();
+      formData.append("name", eventDetails.name);
+      formData.append("description", eventDetails.description);
+      formData.append("projectId", projectResponse.data._id); // Add project reference
+      if (eventDetails.image) {
+        formData.append("image", eventDetails.image);
+      }
+  
+      const eventResponse = await axiosInstance.post("/add-event", formData);
+  
+      if (eventResponse.data?.event) {
+        setEvents([
+          ...events,
+          {
+            ...eventResponse.data.event,
+            isExpanded: false,
+            projectId: projectResponse.data._id, // Store project reference
+          },
+        ]);
         setEventDetails({
           name: "",
           description: "",
@@ -93,10 +101,11 @@ const Home = () => {
       ) {
         showToast(error.response.data.message, "error");
       } else {
-        showToast("Error adding Project: " + error.message, "error");
+        showToast("Error adding event: " + error.message, "error");
       }
     }
   };
+  
 
   const handleDelete = async (eventId) => {
     if (window.confirm("Are you sure you want to delete this Project?")) {
@@ -205,22 +214,23 @@ const Home = () => {
                 ></button>
               </div>
               <div className="modal-body">
-                {successMessage && (
-                  <div className="alert alert-success">{successMessage}</div>
-                )}
-                <form onSubmit={handleSubmit}>
-                  <div className="form-fields space-y-4">
-                    <div>
-                      <label className="block font-medium text-gray-700">Project Name:</label>
-                      <input
-                        type="text"
-                        name="name"
-                        className="form-control mt-1 p-2 border border-gray-300 rounded-md w-full"
-                        value={eventDetails.name}
-                        onChange={handleChange}
-                        required
-                      />
-                    </div>
+    {successMessage && (
+      <div className="alert alert-success">{successMessage}</div>
+    )}
+    <form onSubmit={handleSubmit}>
+      <div className="form-fields space-y-4">
+        <div>
+          <label className="block font-medium text-gray-700">Project Name:</label>
+          <input
+            type="text"
+            name="name"
+            className="form-control mt-1 p-2 border border-gray-300 rounded-md w-full"
+            value={eventDetails.name}
+            onChange={handleChange}
+            required
+            placeholder="Unique project name"
+          />
+        </div>
 
                     <div>
                       <label className="block font-medium text-gray-700">Description:</label>
@@ -267,11 +277,12 @@ const Home = () => {
           {events.map((event, index) => (
             <div key={index} className="event-box p-3 mb-3 border rounded">
               <div className="image-container">
-                <img
-                  src={event.image || defaultImage}
-                  alt="Event"
-                  className="img-fluid event-image"
-                />
+              <img
+                src={event.image ? event.image : defaultImage}
+                alt="Event"
+                className="img-fluid event-image"
+              />
+
               </div>
               <h5 className="event-name">{event.name}</h5>
               <button
@@ -286,13 +297,13 @@ const Home = () => {
               >
                 Delete
               </button>
-              <div className="livestream-container">
-              <button
-  onClick={() => handleStartProject(event)}
-  className="btn btn-link livestream-icon"
->
-  Start Project
-</button>
+                <div className="livestream-container">
+                <button
+                onClick={() => handleStartProject(event)}
+                className="btn btn-link livestream-icon"
+              >
+                Start Project
+              </button>
               </div>
             </div>
           ))}
