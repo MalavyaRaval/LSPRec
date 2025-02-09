@@ -19,8 +19,8 @@ const App = () => {
         <Route path="/home" element={<Home />} />
         <Route path="/aboutus" element={<AboutUs />} />
         <Route path="/" element={<Intro />} />
-        <Route path="/user/:username/project/:projectname" element={<ProjectPage />} /> {/* Add this route */}
-      </Routes>
+        <Route path="/user/:username/project/:projectname" element={<ProjectPage />} />
+        </Routes>
     </Router>
   );
 };

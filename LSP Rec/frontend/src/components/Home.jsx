@@ -33,18 +33,26 @@ const Home = () => {
     });
   };
 
-const handleStartProject = () => {
-  const projectName = eventDetails.name;
-  const fullName = localStorage.getItem("fullName"); // Retrieve fullName from localStorage
-  console.log("Full Name:", fullName);  // Add this line to check if fullName exists in localStorage
-  console.log("Project Name:", projectName);  // Check if projectName is correct
-
-  if (fullName && projectName) {
-    navigate(`/user/${fullName}/project/${projectName}`);
-  } else {
-    console.error("Full name or project name is missing");
-  }
-};
+  const handleStartProject = (project) => {
+    // Use the project object passed in to get the project name
+    const projectName = project.name.trim();
+    // Retrieve the user's full name from localStorage (ensure it's saved on login/signup)
+    const storedFullName = localStorage.getItem("fullName")?.trim();
+    console.log("Full Name from localStorage:", storedFullName);
+    console.log("Project Name:", projectName);
+  
+    if (storedFullName && projectName) {
+      // Sanitize: replace spaces with hyphens and convert to lower case for URL friendliness
+      const formattedFullName = storedFullName.replace(/\s+/g, "-").toLowerCase();
+      const formattedProjectName = projectName.replace(/\s+/g, "-").toLowerCase();
+      navigate(`/user/${formattedFullName}/project/${formattedProjectName}`);
+    } else {
+      console.error("Full name or project name is missing");
+      showToast("Full name or project name is missing", "error");
+    }
+  };
+  
+  
 
 
   const handleImageChange = (e) => {
@@ -279,9 +287,12 @@ const handleStartProject = () => {
                 Delete
               </button>
               <div className="livestream-container">
-                <button onClick={handleStartProject} className="btn btn-link livestream-icon">
-                  Start Project
-                </button>
+              <button
+  onClick={() => handleStartProject(event)}
+  className="btn btn-link livestream-icon"
+>
+  Start Project
+</button>
               </div>
             </div>
           ))}

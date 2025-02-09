@@ -1,42 +1,57 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import axiosInstance from "./utils/axiosInstance"; // Ensure to use your axios instance to fetch data
+import axiosInstance from "./utils/axiosInstance";
 
 const ProjectPage = () => {
-  const { username, projectName } = useParams(); // Get username and projectName from the URL
+  const { username, projectname } = useParams();
   const [project, setProject] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const fetchProjectDetails = async () => {
-      try {
-        // Fetch project data from your backend or API
-        const response = await axiosInstance.get(`/get-project/${username}/${projectName}`);
-        if (response.data && response.data.project) {
-          setProject(response.data.project);
+    // Try to fetch project details from the backend
+    axiosInstance
+      .get(`/get-project/${username}/${projectname}`)
+      .then((response) => {
+        // Assume the API returns { project: { ... } } if it exists
+        setProject(response.data.project);
+        setLoading(false);
+      })
+      .catch((err) => {
+        // If the error status is 404, assume it's a new project with no details yet.
+        if (err.response && err.response.status === 404) {
+          setProject(null);
+          setError(""); // Clear error so that we render the default page
         } else {
-          setError("Project not found.");
+          setError(
+            "Error fetching project details: " +
+              (err.response?.data?.message || err.message)
+          );
         }
-      } catch (error) {
-        setError("Error fetching project details: " + error.message);
-      }
-    };
+        setLoading(false);
+      });
+  }, [username, projectname]);
 
-    fetchProjectDetails();
-  }, [username, projectName]);
+  if (loading) {
+    return <div>Loading project...</div>;
+  }
 
   return (
-    <div className="project-page">
-      {error && <div className="error-message">{error}</div>}
-      {project ? (
+    <div className="project-page p-4">
+      <h1 className="text-2xl font-bold">
+        {project ? project.name : projectname}
+      </h1>
+      {error && <div className="alert alert-danger">{error}</div>}
+      {!project ? (
         <div>
-          <h1>{project.name}</h1>
-          <p>{project.description}</p>
-          <img src={project.image || "/defaultImage.jpg"} alt="Project" />
-          {/* Render more project details as needed */}
+          <p>No project details found. Start building your project!</p>
+          {/* Here you can add a form or any default content to let the user edit/add details */}
         </div>
       ) : (
-        <p>Loading project...</p>
+        <div>
+          <p>{project.description}</p>
+          {/* Render additional project details if needed */}
+        </div>
       )}
     </div>
   );
