@@ -175,30 +175,23 @@ const ProjectTree = ({ projectId }) => {
       children: [],
       parent: parentId,
     };
-
+  
     const updateTree = (node) => {
       if (node.id === parentId) {
         if (node.children.length >= 5) {
           alert("Maximum of 5 children allowed per node!");
           return node;
         }
-        // Add the new node as a sibling
         return { ...node, children: [...node.children, newNode] };
       }
-
-      // Ensure children can't exceed 5 children
-      if (node.children && node.children.length > 0) {
-        node.children = node.children.map(updateTree);
-      }
-
-      return node;
+  
+      return { ...node, children: node.children.map(updateTree) };
     };
-
-    const updatedTree = updateTree(tree);
+  
+    const updatedTree = updateTree({ ...tree });
     setTree(updatedTree);
     await saveProject(updatedTree);
   };
-
   const deleteNode = async (nodeId) => {
     const removeNode = (node) => {
       return {
