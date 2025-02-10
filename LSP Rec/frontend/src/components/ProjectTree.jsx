@@ -1,5 +1,4 @@
-//// filepath: /c:/Users/malav/OneDrive - San Francisco State University/Desktop/895/LSPRec/LSP Rec/frontend/src/components/ProjectTree.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import "../CSS/projecttree.css";
@@ -10,6 +9,21 @@ const TreeNode = ({ node, addChild, deleteNode, editNode }) => {
   const [editing, setEditing] = useState(false);
   const [showAddChildInput, setShowAddChildInput] = useState(false);
 
+  // Use ref to track the options box
+  const optionsRef = useRef(null);
+
+  // Close options if clicked outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (optionsRef.current && !optionsRef.current.contains(event.target)) {
+        setShowOptions(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const handleAddChild = () => {
     if (childName.trim()) {
       addChild(node.id, childName.trim());
@@ -18,9 +32,20 @@ const TreeNode = ({ node, addChild, deleteNode, editNode }) => {
     }
   };
 
+  const handleOptionClick = (action) => {
+    setShowOptions(false);
+    action();
+  };
+
   return (
     <div className="tree-branch">
-      {node.parent && <div className="connector"></div>}
+      {node.parent && (
+  <div className="connector">
+    <svg viewBox="0 0 80 30" preserveAspectRatio="none">
+      <path d="M40,30 C40,15 40,15 40,0" />
+    </svg>
+  </div>
+)}
       <div className="node" onClick={() => setShowOptions(!showOptions)}>
         {editing ? (
           <input
@@ -36,25 +61,25 @@ const TreeNode = ({ node, addChild, deleteNode, editNode }) => {
       </div>
 
       {showOptions && (
-        <div className="node-options flex space-x-2 mt-2">
+        <div ref={optionsRef} className="node-options flex space-x-2 mt-2">
           <button
             className="bg-red-500 text-black px-3 py-1 rounded hover:bg-red-600 transition"
-            onClick={() => deleteNode(node.id)}
+            onClick={() => handleOptionClick(() => deleteNode(node.id))}
           >
             Delete
           </button>
           <button
             className="bg-blue-500 text-black px-3 py-1 rounded hover:bg-blue-600 transition"
-            onClick={() => setEditing(true)}
+            onClick={() => handleOptionClick(() => setEditing(true))}
           >
             Edit
           </button>
           <button
             className="bg-green-500 text-black px-3 py-1 rounded hover:bg-green-600 transition"
-            onClick={() => {
+            onClick={() => handleOptionClick(() => {
               setShowAddChildInput(true);
               setChildName("");
-            }}
+            })}
             disabled={node.children.length >= 5}
             title={
               node.children.length >= 5
@@ -86,16 +111,23 @@ const TreeNode = ({ node, addChild, deleteNode, editNode }) => {
         </div>
       )}
 
-      {node.children && node.children.length > 0 && (
-        <div className="children-container">
-          {node.children.map((child) => (
-            <TreeNode
-              key={child.id}
-              node={child}
-              addChild={addChild}
-              deleteNode={deleteNode}
-              editNode={editNode}
-            />
+{node.children && node.children.length > 0 && (
+  <div className="children-container">
+    {node.children.map((child) => (
+      <div key={child.id} className="child-wrapper">
+        <div className="child-connector">
+          <svg viewBox="0 0 80 30" preserveAspectRatio="none">
+            {/* This path creates a smooth curve from left to right */}
+            <path d="M0,30 C40,0 40,0 80,30" />
+          </svg>
+        </div>
+        <TreeNode
+          node={child}
+          addChild={addChild}
+          deleteNode={deleteNode}
+          editNode={editNode}
+        />
+      </div>
           ))}
         </div>
       )}
@@ -150,12 +182,16 @@ const ProjectTree = ({ projectId }) => {
           alert("Maximum of 5 children allowed per node!");
           return node;
         }
+        // Add the new node as a sibling
         return { ...node, children: [...node.children, newNode] };
       }
-      return {
-        ...node,
-        children: node.children.map(updateTree),
-      };
+
+      // Ensure children can't exceed 5 children
+      if (node.children && node.children.length > 0) {
+        node.children = node.children.map(updateTree);
+      }
+
+      return node;
     };
 
     const updatedTree = updateTree(tree);
