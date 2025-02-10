@@ -171,18 +171,13 @@ app.get("/get-user", authenticationToken, async (req, res) => {
 app.post("/add-event", authenticationToken, (req, res) => {
   upload(req, res, async (err) => {
     if (err) {
-      console.error("Multer error:", err);
       return res.status(400).json({
         error: true,
         message: err.message,
       });
     }
 
-    console.log("Request body:", req.body);      // Log text fields
-    console.log("Uploaded file:", req.file);       // Log file details
-
-    const { name, description } = req.body;
-    // If a file was uploaded, its path will be stored here; otherwise, null
+    const { name, description, projectId } = req.body; // Add projectId
     const image = req.file ? `/uploads/${req.file.filename}` : null;
     const userId = req.user.userId;
 
@@ -190,7 +185,8 @@ app.post("/add-event", authenticationToken, (req, res) => {
       const event = new Event({
         name,
         description,
-        image, // Save the relative URL if the file exists
+        image,
+        projectId,  // Add projectId to event
         createdBy: userId,
       });
 

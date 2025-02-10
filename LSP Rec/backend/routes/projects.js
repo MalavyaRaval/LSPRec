@@ -44,23 +44,48 @@ module.exports = router;
 
 // POST
 router.post('/', async (req, res) => {
-    try {
-      const { projectName } = req.body;
-      const projectId = projectName.toLowerCase().replace(/\s+/g, '-');
-      
-      const newProject = new Project({
-        projectId,
-        treeData: {
-          id: 1,
-          name: projectName,
-          children: [],
-          parent: null
-        }
-      });
-  
-      await newProject.save();
-      res.status(201).json(newProject);
-    } catch (err) {
-      res.status(400).json({ message: err.message });
+  try {
+    const { projectName } = req.body;
+    
+    // Validate project name
+    if (!projectName || typeof projectName !== 'string') {
+      return res.status(400).json({ message: "Valid projectName is required" });
     }
-  });
+
+    // Create URL-safe ID
+    const projectId = projectName
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^\w-]+/g, '');
+
+    // Check for existing project
+    const exists = await Project.findOne({ projectId });
+    if (exists) {
+      return res.status(400).json({ message: "Project name already exists" });
+    }
+
+    const newProject = new Project({
+      projectId,
+      treeData: {
+        id: Date.now(),  // Changed from static 1 to unique ID
+        name: projectName,
+        children: [],
+        parent: null
+      }
+    });
+
+    await newProject.save();
+    
+    res.status(201).json({
+      projectId,
+      projectName,
+      _id: newProject._id  // Return both identifiers
+    });
+    
+  } catch (err) {
+    res.status(400).json({ 
+      message: err.message || "Error creating project",
+      errorDetails: err 
+    });
+  }
+});

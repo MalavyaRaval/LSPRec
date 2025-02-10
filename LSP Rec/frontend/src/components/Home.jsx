@@ -57,52 +57,43 @@ const Home = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // First create the project structure
+      // Create project first
       const projectResponse = await axiosInstance.post("/api/projects", {
-        projectName: eventDetails.name,
+        projectName: eventDetails.name.trim()
       });
   
-      // Then create the event with the project reference
+      // Create event with FormData
       const formData = new FormData();
       formData.append("name", eventDetails.name);
       formData.append("description", eventDetails.description);
-      formData.append("projectId", projectResponse.data._id); // Add project reference
+      formData.append("projectId", projectResponse.data.projectId); // Use projectId instead of _id
+      
       if (eventDetails.image) {
         formData.append("image", eventDetails.image);
       }
   
-      const eventResponse = await axiosInstance.post("/add-event", formData);
+      const eventResponse = await axiosInstance.post("/add-event", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data"
+        }
+      });
   
-      if (eventResponse.data?.event) {
-        setEvents([
-          ...events,
-          {
-            ...eventResponse.data.event,
-            isExpanded: false,
-            projectId: projectResponse.data._id, // Store project reference
-          },
-        ]);
-        setEventDetails({
-          name: "",
-          description: "",
-          image: null,
-        });
-        setError("");
-        showToast("Project added successfully!", "success");
-        document.querySelector('[data-bs-dismiss="modal"]').click();
-      } else {
-        showToast("Failed to add event", "error");
-      }
+      // Update state with the new event
+      setEvents([...events, { 
+        ...eventResponse.data.event,
+        projectId: projectResponse.data.projectId
+      }]);
+      
+      // Reset form
+      setEventDetails({ name: "", description: "", image: null });
+      showToast("Project added successfully!", "success");
+      document.querySelector('[data-bs-dismiss="modal"]').click();
+      
     } catch (error) {
-      if (
-        error.response &&
-        error.response.data &&
-        error.response.data.message
-      ) {
-        showToast(error.response.data.message, "error");
-      } else {
-        showToast("Error adding event: " + error.message, "error");
-      }
+      const errorMessage = error.response?.data?.message || 
+                          error.message || 
+                          "Project creation failed";
+      showToast(errorMessage, "error");
     }
   };
   
