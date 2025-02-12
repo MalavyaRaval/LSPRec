@@ -130,15 +130,15 @@ nav {
 .events-list {
   margin-top: 20px;
   display: flex;
-  flex-wrap: wrap; /* Enable wrapping */
-  gap: 20px; /* Add some space between event boxes */
+  flex-wrap: wrap; 
+  gap: 20px; 
 }
 
 .event-box {
   background-color: #f8f9fa;
   border: 1px solid #ddd;
-  width: 300px; /* Set a fixed width for event boxes */
-  height: 450px; /* Set a fixed height for event boxes */
+  width: 300px; 
+  height: 450px; 
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -150,13 +150,13 @@ nav {
 }
 
 .event-details {
-  margin-top: 10px; /* Add margin to details */
+  margin-top: 10px;
 }
 
 .image-container {
-  width: 100%; /* Make image container take full width of the event box */
-  max-height: 200px; /* Set max height for the image container */
-  overflow: hidden; /* Hide any overflow from the images */
+  width: 100%; 
+  max-height: 200px; 
+  overflow: hidden; 
   display: flex;
   align-items: center;
   justify-content: center;
@@ -171,7 +171,7 @@ nav {
   width: 100%;
   text-align: center;
   margin-top: 10px;
-  margin-bottom: 10px; /* Add space below the icon */
+  margin-bottom: 10px; 
 }
 
 .livestream-icon {
@@ -179,9 +179,9 @@ nav {
 }
 
 .modal-image-container {
-  width: 100%; /* Full width */
-  max-height: 300px; /* Maximum height */
-  overflow: hidden; /* Hide overflow */
+  width: 100%; 
+  max-height: 300px;
+  overflow: hidden; 
   display: flex;
   align-items: center;
   justify-content: center;
@@ -189,6 +189,109 @@ nav {
 
 .modal-event-image {
   max-width: 100%;
-  max-height: 300px; /* Set a max height to ensure the image fits within the modal */
-  object-fit: contain; /* Ensures the image is fully visible */
+  max-height: 300px;
+  object-fit: contain; 
+}
+
+/* navbar.css - Only for navbar components */
+.navbar-container nav {
+  width: 100%;
+  height: 5em;
+  background-color: rgb(37, 39, 53);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1em;
+}
+
+/* Burger menu styles */
+.burger-menu {
+  height: 100%;
+  width: 4em;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.burger-bar {
+  width: 25px;
+  height: 3px;
+  background-color: white;
+  margin: 3px 0;
+  transition: all 0.3s;
+}
+
+.burger-bar.clicked:nth-child(1) {
+  transform: rotate(45deg) translate(5px, 6px);
+}
+
+.burger-bar.clicked:nth-child(2) {
+  opacity: 0;
+}
+
+.burger-bar.clicked:nth-child(3) {
+  transform: rotate(-45deg) translate(5px, -6px);
+}
+
+/* Slide-out menu */
+.menu {
+  position: fixed;
+  top: 0;
+  left: -200px;
+  width: 200px;
+  height: 100vh;
+  background-color: white;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+  transition: left 0.3s;
+  z-index: 1000;
+  padding-top: 5em;
+}
+
+.menu.visible {
+  left: 0;
+}
+
+.menu ul {
+  list-style: none;
+  padding: 20px;
+}
+
+.menu ul li {
+  padding: 10px 0;
+}
+
+.menu ul li a {
+  color: #333;
+  text-decoration: none;
+}
+
+/* Website title */
+.navbar-container nav h1 {
+  color: white;
+  font-size: 1.5rem;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Profile button */
+.profile-button {
+  background-color: #3b82f6;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.profile-button:hover {
+  background-color: #2563eb;
+}
+
+/* Hide profile button on mobile */
+@media (max-width: 767px) {
+  .profile-button {
+    display: none;
+  }
 }

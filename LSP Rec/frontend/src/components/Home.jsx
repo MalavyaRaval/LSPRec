@@ -9,6 +9,7 @@ import defaultImage from "../images/symbol.jpg";
 import axiosInstance from "./utils/axiosInstance";
 import ToastMessage from "./ToastMessage";
 
+
 const Home = () => {
   const [events, setEvents] = useState([]);
   const [eventDetails, setEventDetails] = useState({
