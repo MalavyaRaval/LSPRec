@@ -4,7 +4,7 @@ const eventSchema = new mongoose.Schema({
   name: String,
   description: String,
   image: String,
-  projectId: {  // Add this field
+  projectId: {  
     type: String,
     required: true
   },

@@ -84,11 +84,7 @@ const Dema = () => {
     if (e.key === "Enter" && !isLoading) handleSendMessage();
   };
 
-  // Decision-making handlers
-  const handleContinue = (answer) => {
-    answer === "yes" ? setStep("objectName") : setStep("exit");
-  };
-
+  // In your Dema.jsx file, update the handleComponentCountSubmit function:
   const handleComponentCountSubmit = () => {
     const count = parseInt(componentCount);
     if (isNaN(count) || (count !== 0 && (count < 2 || count > 5))) {
@@ -98,8 +94,13 @@ const Dema = () => {
     if (count === 0) {
       setStep("summary");
     } else {
+      // Create an array with unique objects for each component
       setComponentDetails(
-        Array(count).fill({ name: "", importance: "", connection: "" })
+        Array.from({ length: count }, () => ({
+          name: "",
+          importance: "",
+          connection: "",
+        }))
       );
       setStep("componentDetails");
     }
