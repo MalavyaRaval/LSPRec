@@ -1,14 +1,12 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const projectSchema = new mongoose.Schema({
-  projectId: {
-    type: String,
-    required: true,
-    unique: true
-  },
+  projectId: { type: String, required: true, unique: true },
   treeData: {
-    type: mongoose.Schema.Types.Mixed,
-    required: true
+    type: Object,
+    required: true,
+    default: { id: 1, name: "Root", children: [], parent: null }
   }
 });
-module.exports = mongoose.model('Project', projectSchema);
+
+module.exports = mongoose.model("Project", projectSchema);

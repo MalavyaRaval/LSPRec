@@ -1,25 +1,30 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../CSS/projecttree.css";
 
-const TreeNode = ({ node, addChild, deleteNode, editNode }) => {
+const TreeNode = ({
+  node,
+  addChild,
+  deleteNode,
+  editNode,
+  projectId,
+  username,
+  projectname,
+}) => {
+  const navigate = useNavigate();
   const [showOptions, setShowOptions] = useState(false);
   const [childName, setChildName] = useState("");
   const [editing, setEditing] = useState(false);
   const [showAddChildInput, setShowAddChildInput] = useState(false);
-
-  // Use ref to track the options box
   const optionsRef = useRef(null);
 
-  // Close options if clicked outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (optionsRef.current && !optionsRef.current.contains(event.target)) {
         setShowOptions(false);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
@@ -37,15 +42,32 @@ const TreeNode = ({ node, addChild, deleteNode, editNode }) => {
     action();
   };
 
+  // New: "Add with DEMA" button handler
+  const handleAddWithDEMA = () => {
+    console.log("handleAddWithDEMA called with:", {
+      projectId,
+      username,
+      projectname,
+      parentId: node.id,
+    });
+    if (projectId && username && projectname) {
+      navigate(
+        `/dema?projectId=${projectId}&parentId=${node.id}&username=${username}&projectname=${projectname}`
+      );
+    } else {
+      console.error("Missing required project information for DEMA");
+    }
+  };
+
   return (
     <div className="tree-branch">
       {node.parent && (
-  <div className="connector">
-    <svg viewBox="0 0 80 30" preserveAspectRatio="none">
-      <path d="M40,30 C40,15 40,15 40,0" />
-    </svg>
-  </div>
-)}
+        <div className="connector">
+          <svg viewBox="0 0 100 40" preserveAspectRatio="none">
+            <path d="M50,0 C50,20 50,20 50,40" />
+          </svg>
+        </div>
+      )}
       <div className="node" onClick={() => setShowOptions(!showOptions)}>
         {editing ? (
           <input
@@ -54,44 +76,53 @@ const TreeNode = ({ node, addChild, deleteNode, editNode }) => {
             onChange={(e) => editNode(node.id, e.target.value)}
             onBlur={() => setEditing(false)}
             autoFocus
+            className="node-input"
           />
         ) : (
           node.name
         )}
       </div>
-
       {showOptions && (
-        <div ref={optionsRef} className="node-options flex space-x-2 mt-2">
+        <div ref={optionsRef} className="node-options flex space-x-2">
           <button
-            className="bg-red-500 text-black px-3 py-1 rounded hover:bg-red-600 transition"
+            className="btn-option bg-red-500 text-black px-3 py-1 rounded hover:bg-red-600 transition"
             onClick={() => handleOptionClick(() => deleteNode(node.id))}
           >
             Delete
           </button>
           <button
-            className="bg-blue-500 text-black px-3 py-1 rounded hover:bg-blue-600 transition"
+            className="btn-option bg-blue-500 text-black px-3 py-1 rounded hover:bg-blue-600 transition"
             onClick={() => handleOptionClick(() => setEditing(true))}
           >
             Edit
           </button>
           <button
-            className="bg-green-500 text-black px-3 py-1 rounded hover:bg-green-600 transition"
-            onClick={() => handleOptionClick(() => {
-              setShowAddChildInput(true);
-              setChildName("");
-            })}
+            className="btn-option bg-green-500 text-black px-3 py-1 rounded hover:bg-green-600 transition"
+            onClick={() =>
+              handleOptionClick(() => {
+                setShowAddChildInput(true);
+                setChildName("");
+              })
+            }
             disabled={node.children.length >= 5}
             title={
-              node.children.length >= 5
-                ? "Maximum 5 children allowed"
-                : ""
+              node.children.length >= 5 ? "Maximum 5 children allowed" : ""
             }
           >
             Add Child
           </button>
+          <button
+            className="btn-option bg-purple-500 text-black px-3 py-1 rounded hover:bg-purple-600 transition"
+            onClick={() => handleOptionClick(handleAddWithDEMA)}
+            disabled={node.children.length >= 5}
+            title={
+              node.children.length >= 5 ? "Maximum 5 children allowed" : ""
+            }
+          >
+            Add with DEMA
+          </button>
         </div>
       )}
-
       {showAddChildInput && (
         <div className="add-child-input mt-2">
           <input
@@ -99,35 +130,36 @@ const TreeNode = ({ node, addChild, deleteNode, editNode }) => {
             value={childName}
             onChange={(e) => setChildName(e.target.value)}
             placeholder="Child name"
-            className="mr-2 px-2 py-1 border rounded"
+            className="child-input mr-2 px-2 py-1 border rounded"
             onKeyPress={(e) => e.key === "Enter" && handleAddChild()}
           />
           <button
-            className="bg-green-500 text-black px-3 py-1 rounded hover:bg-green-600 transition"
+            className="btn-option bg-green-500 text-black px-3 py-1 rounded hover:bg-green-600 transition"
             onClick={handleAddChild}
           >
             Submit
           </button>
         </div>
       )}
-
-{node.children && node.children.length > 0 && (
-  <div className="children-container">
-    {node.children.map((child) => (
-      <div key={child.id} className="child-wrapper">
-        <div className="child-connector">
-          <svg viewBox="0 0 80 30" preserveAspectRatio="none">
-            {/* This path creates a smooth curve from left to right */}
-            <path d="M0,30 C40,0 40,0 80,30" />
-          </svg>
-        </div>
-        <TreeNode
-          node={child}
-          addChild={addChild}
-          deleteNode={deleteNode}
-          editNode={editNode}
-        />
-      </div>
+      {node.children && node.children.length > 0 && (
+        <div className="children-container">
+          {node.children.map((child) => (
+            <div key={child.id} className="child-wrapper">
+              <div className="child-connector">
+                <svg viewBox="0 0 100 40" preserveAspectRatio="none">
+                  <path d="M0,40 C50,0 50,0 100,40" />
+                </svg>
+              </div>
+              <TreeNode
+                node={child}
+                addChild={addChild}
+                deleteNode={deleteNode}
+                editNode={editNode}
+                projectId={projectId}
+                username={username}
+                projectname={projectname}
+              />
+            </div>
           ))}
         </div>
       )}
@@ -135,33 +167,33 @@ const TreeNode = ({ node, addChild, deleteNode, editNode }) => {
   );
 };
 
-const ProjectTree = ({ projectId }) => {
+const ProjectTree = ({ projectId, username, projectname }) => {
   const [tree, setTree] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Load project on mount
   useEffect(() => {
     const loadProject = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8000/api/projects/${projectId}`  // Use projectId
+          `http://localhost:8000/api/projects/${projectId}`
         );
         setTree(response.data);
       } catch (error) {
-        console.error('Error loading project:', error);
-        alert('Failed to load project');
+        console.error("Error loading project:", error);
+        alert("Failed to load project");
       } finally {
         setLoading(false);
       }
     };
-
     loadProject();
   }, [projectId]);
 
-  // Unified save function
   const saveProject = async (updatedTree) => {
     try {
-      await axios.put(`http://localhost:8000/api/projects/${projectId}`, updatedTree);
+      await axios.put(
+        `http://localhost:8000/api/projects/${projectId}`,
+        updatedTree
+      );
     } catch (error) {
       console.error("Error saving project:", error);
       alert("Failed to save changes");
@@ -175,7 +207,7 @@ const ProjectTree = ({ projectId }) => {
       children: [],
       parent: parentId,
     };
-  
+
     const updateTree = (node) => {
       if (node.id === parentId) {
         if (node.children.length >= 5) {
@@ -184,14 +216,14 @@ const ProjectTree = ({ projectId }) => {
         }
         return { ...node, children: [...node.children, newNode] };
       }
-  
       return { ...node, children: node.children.map(updateTree) };
     };
-  
+
     const updatedTree = updateTree({ ...tree });
     setTree(updatedTree);
     await saveProject(updatedTree);
   };
+
   const deleteNode = async (nodeId) => {
     const removeNode = (node) => {
       return {
@@ -201,7 +233,6 @@ const ProjectTree = ({ projectId }) => {
           .map(removeNode),
       };
     };
-
     const updatedTree = removeNode(tree);
     setTree(updatedTree);
     await saveProject(updatedTree);
@@ -214,7 +245,6 @@ const ProjectTree = ({ projectId }) => {
       }
       return { ...node, children: node.children.map(updateName) };
     };
-
     const updatedTree = updateName(tree);
     setTree(updatedTree);
     await saveProject(updatedTree);
@@ -223,7 +253,6 @@ const ProjectTree = ({ projectId }) => {
   if (loading) {
     return <div className="text-center p-4">Loading project...</div>;
   }
-
   if (!tree) {
     return <div className="text-center p-4">Project not found</div>;
   }
@@ -235,6 +264,9 @@ const ProjectTree = ({ projectId }) => {
         addChild={addChild}
         deleteNode={deleteNode}
         editNode={editNode}
+        projectId={projectId}
+        username={username}
+        projectname={projectname}
       />
     </div>
   );

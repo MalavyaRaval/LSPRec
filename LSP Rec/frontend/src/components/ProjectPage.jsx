@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "./Nav/Navbar";
 import Footer from "./Footer";
 import ProjectTree from "./ProjectTree";
-import Dema from "./Dema.jsx"; // Import the new component
+import Dema from "./DEMA.jsx";
 import "../CSS/projectpage.css";
 
 const ProjectPage = () => {
@@ -11,12 +11,14 @@ const ProjectPage = () => {
   const navigate = useNavigate();
 
   const projectSlug = projectname
-    .toLowerCase()
-    .replace(/\s+/g, "-")
-    .replace(/[^\w-]+/g, "");
+    ? projectname
+        .toLowerCase()
+        .replace(/\s+/g, "-")
+        .replace(/[^\w-]+/g, "")
+    : null;
 
   const storedFullName = localStorage.getItem("fullName")?.trim();
-  const evaluatorName = storedFullName;
+  const evaluatorName = storedFullName || username || "defaultUser";
 
   const handleNav = (action) => {
     if (action === "projects") {
@@ -68,7 +70,7 @@ const ProjectPage = () => {
             <strong>User:</strong> {evaluatorName}
           </p>
           <p className="text-lg text-gray-700">
-            <strong>Project:</strong> {projectname.toUpperCase()}
+            <strong>Project:</strong> {projectname?.toUpperCase() || "N/A"}
           </p>
         </div>
 
@@ -79,7 +81,11 @@ const ProjectPage = () => {
         >
           {/* Project Tree Section */}
           <div className="flex-1 bg-white p-6 rounded shadow overflow-hidden">
-            <ProjectTree projectId={projectSlug} />
+            <ProjectTree
+              projectId={projectSlug}
+              username={evaluatorName}
+              projectname={projectname}
+            />
           </div>
 
           {/* Chat Assistant Section - Fixed width */}

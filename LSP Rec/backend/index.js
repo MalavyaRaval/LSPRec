@@ -1,69 +1,67 @@
 require("dotenv").config();
-const multer = require("multer");
 const path = require("path");
 const config = require("./config.json");
 const mongoose = require("mongoose");
-
-mongoose.connect(config.connectionString || process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-});
-const User = require("./models/user.model");
-const Event = require("./models/event.model");
-
 const express = require("express");
 const cors = require("cors");
+const multer = require("multer");
 const jwt = require("jsonwebtoken");
+
+// Connect to MongoDB
+mongoose.connect(config.connectionString || process.env.MONGODB_URI, {});
+
+// Import models
+const User = require("./models/user.model");
+const Event = require("./models/event.model");
+const Project = require("./models/Project");
+
+// Import your authentication utility
 const { authenticationToken } = require("./utilities");
 
 const app = express();
-const router = express.Router();
 
-const Project = require("./models/Project"); // Add this line with other model imports
-const projectsRouter = require("./routes/projects"); // Add this with other requires
-
+// Middleware
 app.use(express.json());
 app.use(cors({ origin: "*" }));
 app.use('/uploads', express.static('uploads'));
 
-// Add this with your other route middlewares
-app.use('/api/projects', projectsRouter); // Add this line after the other app.use() calls
-
-// imgage
+// Set up multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "uploads/");
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname)); 
-  },
+    cb(null, Date.now() + path.extname(file.originalname));
+  }
 });
-
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // Limit file size to 10MB
+  limits: { fileSize: 10 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const allowedTypes = /jpeg|jpg|png|gif/;
     const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
     const mimetype = allowedTypes.test(file.mimetype);
-
     if (extname && mimetype) {
       return cb(null, true);
     } else {
       return cb(new Error("Only image files are allowed"), false);
     }
-  },
-}).single("image"); // 'image' is the field name for the uploaded file
+  }
+}).single("image");
 
-
-// Middleware to check if user is authenticated
+// Example authentication middleware (adjust as needed)
 const isAuthenticated = (req, res, next) => {
-  if (req.isAuthenticated()) {
+  if (req.isAuthenticated && req.isAuthenticated()) {
     return next();
   } else {
     return res.status(401).json({ error: true, message: "Unauthorized" });
   }
 };
+
+// Routes
+
+const projectsRouter = require("./routes/projects");
+app.use('/api/projects', projectsRouter);
 
 app.get("/", (req, res) => {
   res.json({ data: "hello" });
@@ -71,62 +69,42 @@ app.get("/", (req, res) => {
 
 // Create new Account
 app.post("/create-account", async (req, res) => {
-  const { fullName, email, password, address, city, state, zip } =
-    req.body;
-
+  const { fullName, email, password, address, city, state, zip } = req.body;
   if (!fullName || !email || !password || !address || !city || !state || !zip) {
-    return res
-      .status(400)
-      .json({ error: true, message: "All fields are required" });
+    return res.status(400).json({ error: true, message: "All fields are required" });
   }
-
   const isUser = await User.findOne({ email });
-
   if (isUser) {
-    return res
-      .status(400)
-      .json({ error: true, message: "User already exists" });
+    return res.status(400).json({ error: true, message: "User already exists" });
   }
-
   const user = new User({
     fullName,
     email,
-    password, // Store password as plain text
+    password, // Plain text storage
     address,
     city,
     state,
-    zip,
+    zip
   });
-
   await user.save();
-
-  const accessToken = jwt.sign(
-    { userId: user._id },
-    process.env.ACCESS_TOKEN_SECRET,
-    {
-      expiresIn: "3000m",
-    }
-  );
-
+  const accessToken = jwt.sign({ userId: user._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "3000m" });
   return res.json({
     error: false,
     user,
     accessToken,
-    message: "Registration Successful!",
+    message: "Registration Successful!"
   });
 });
 
-
-// Login endpoint (backend)
+// Login
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email });
-
   if (user && user.password === password) {
     const accessToken = jwt.sign({ userId: user._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "6000m" });
     return res.json({
       accessToken,
-      fullName: user.fullName, // Send fullName as part of the response
+      fullName: user.fullName
     });
   } else {
     return res.status(400).json({ message: "Invalid credentials" });
@@ -136,19 +114,11 @@ app.post("/login", async (req, res) => {
 // Get User
 app.get("/get-user", authenticationToken, async (req, res) => {
   const userId = req.user.userId;
-
-  console.log("User ID received from token:", userId); // Add this line for debugging
-
   try {
     const user = await User.findById(userId);
-
     if (!user) {
-      console.log("User not found for ID:", userId); // Add this line for debugging
       return res.sendStatus(401);
     }
-
-    console.log("User found:", user); // Add this line for debugging
-
     return res.json({
       user: {
         fullName: user.fullName,
@@ -157,17 +127,16 @@ app.get("/get-user", authenticationToken, async (req, res) => {
         city: user.city,
         state: user.state,
         zip: user.zip,
-        createdOn: user.createdOn,
+        createdOn: user.createdOn
       },
-      message: "",
+      message: ""
     });
   } catch (error) {
-    console.error("Error retrieving user:", error); // Add this line for debugging
     return res.sendStatus(500);
   }
 });
 
-// Add Event
+// Add Event (using default image if none provided)
 app.post("/add-event", authenticationToken, (req, res) => {
   upload(req, res, async (err) => {
     if (err) {
@@ -176,22 +145,18 @@ app.post("/add-event", authenticationToken, (req, res) => {
         message: err.message,
       });
     }
-
-    const { name, description, projectId } = req.body; // Add projectId
-    const image = req.file ? `/uploads/${req.file.filename}` : null;
+    const { name, description, projectId } = req.body;
+    const image = req.file ? `/uploads/${req.file.filename}` : "/uploads/default.jpg";
     const userId = req.user.userId;
-
     try {
       const event = new Event({
         name,
         description,
         image,
-        projectId,  // Add projectId to event
+        projectId,
         createdBy: userId,
       });
-
       await event.save();
-
       return res.json({
         error: false,
         event,
@@ -207,28 +172,18 @@ app.post("/add-event", authenticationToken, (req, res) => {
   });
 });
 
-
 // Edit Account
 app.put("/edit-account", authenticationToken, async (req, res) => {
-  const userId = req.user.userId; // Extracted from authentication token
+  const userId = req.user.userId;
   const { fullName, email, password, address, city, state, zip } = req.body;
-
   try {
-    // Find the user by userId
     let user = await User.findById(userId);
-
     if (!user) {
       return res.status(404).json({ error: true, message: "User not found" });
     }
-
-    // Ensure only the authenticated user can edit their own account
     if (user._id.toString() !== userId) {
-      return res.status(403).json({
-        error: true,
-        message: "Unauthorized to edit this user's account",
-      });
+      return res.status(403).json({ error: true, message: "Unauthorized" });
     }
-
     if (fullName) user.fullName = fullName;
     if (email) user.email = email;
     if (password) user.password = password;
@@ -236,9 +191,7 @@ app.put("/edit-account", authenticationToken, async (req, res) => {
     if (city) user.city = city;
     if (state) user.state = state;
     if (zip) user.zip = zip;
-
     await user.save();
-
     return res.json({
       error: false,
       user,
@@ -272,24 +225,18 @@ app.get("/get-all-events", async (req, res) => {
 // Delete Event
 app.delete("/delete-event/:eventId", authenticationToken, async (req, res) => {
   const eventId = req.params.eventId;
-
   try {
     const event = await Event.findOne({ _id: eventId });
-
     if (!event) {
       return res.status(404).json({ error: true, message: "Project not found" });
     }
-
-    // Check if the event was created by the current user
     if (event.createdBy.toString() !== req.user.userId.toString()) {
       return res.status(403).json({
         error: true,
-        message: "You do not have permission to delete this Project",
+        message: "You do not have permission to delete this Project"
       });
     }
-
     await Event.deleteOne({ _id: eventId });
-
     return res.json({
       error: false,
       message: "Project deleted successfully",

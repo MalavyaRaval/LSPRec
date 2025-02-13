@@ -1,35 +1,92 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import axios from "axios";
 import { format } from "date-fns";
 import "../CSS/DEMA.css";
 
 const Dema = () => {
-  // Conversation flow state
+  const location = useLocation();
+  const navigate = useNavigate();
+  const query = new URLSearchParams(location.search);
+  const projectId = query.get("projectId");
+  const parentId = query.get("parentId");
+  const username = query.get("username");
+  const projectname = query.get("projectname");
+
+  // Chat states
+  const [messages, setMessages] = useState([]);
+  const [inputValue, setInputValue] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef(null);
+
+  // Decision-making states
   const [step, setStep] = useState("intro");
-  // Data states
   const [objectName, setObjectName] = useState("");
   const [componentCount, setComponentCount] = useState("");
   const [componentDetails, setComponentDetails] = useState([]);
 
-  // For showing chat messages if desired
-  const [messages, setMessages] = useState([]);
-
-  // ----- Conversation Flow Texts -----
+  // Constants
   const introMessage =
-    "I am DEMA, your decision-making assistant. I can help you to systematically determine the suitability (value) of a single object or multiple alternatives, based on your needs and requirements. If you have multiple objects or alternatives, I can help you to compare them and select the best alternative.";
+    "I am DEMA, your decision-making assistant. I can help you systematically evaluate alternatives and create structured project components.";
+  const exitMessage =
+    "Your components have been created successfully! Redirecting back to project...";
 
-  // ----- Handlers for flow transitions -----
-  const handleContinue = (answer) => {
-    if (answer === "yes") {
-      setStep("objectName");
-    } else {
-      setStep("exit");
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, step]);
+
+  useEffect(() => {
+    if (step === "exit") {
+      const timer = setTimeout(() => {
+        navigate(`/user/${username}/project/${projectname}`);
+      }, 2500);
+      return () => clearTimeout(timer);
     }
+  }, [step, navigate, username, projectname]);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const handleObjectNameSubmit = () => {
-    if (objectName.trim()) {
-      setStep("componentCount");
-    }
+  const getBotResponse = async (userMessage) => {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const responses = {
+      hello: "Hello! How can I assist you with your project today?",
+      help: "I can help you with project documentation, requirements, and best practices. Ask me anything!",
+      default:
+        "I'm still learning. Please contact our support team for more complex queries.",
+    };
+    return responses[userMessage.toLowerCase()] || responses.default;
+  };
+
+  const handleSendMessage = async () => {
+    if (!inputValue.trim()) return;
+    const userMessage = {
+      text: inputValue,
+      isBot: false,
+      timestamp: new Date(),
+    };
+    setMessages((prev) => [...prev, userMessage]);
+    setInputValue("");
+    setIsLoading(true);
+
+    const botResponse = await getBotResponse(inputValue);
+    const botMessage = {
+      text: botResponse,
+      isBot: true,
+      timestamp: new Date(),
+    };
+    setMessages((prev) => [...prev, botMessage]);
+    setIsLoading(false);
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter" && !isLoading) handleSendMessage();
+  };
+
+  // Decision-making handlers
+  const handleContinue = (answer) => {
+    answer === "yes" ? setStep("objectName") : setStep("exit");
   };
 
   const handleComponentCountSubmit = () => {
@@ -39,15 +96,11 @@ const Dema = () => {
       return;
     }
     if (count === 0) {
-      // No components: go back to object name step or finish
       setStep("summary");
     } else {
-      // Initialize empty rows for each component
-      const details = [];
-      for (let i = 0; i < count; i++) {
-        details.push({ name: "", importance: "", connection: "" });
-      }
-      setComponentDetails(details);
+      setComponentDetails(
+        Array(count).fill({ name: "", importance: "", connection: "" })
+      );
       setStep("componentDetails");
     }
   };
@@ -59,239 +112,278 @@ const Dema = () => {
   };
 
   const handleComponentDetailsSubmit = () => {
-    // Validate each component entry
     for (let i = 0; i < componentDetails.length; i++) {
       const { name, importance, connection } = componentDetails[i];
       if (!name.trim() || !importance || !connection) {
         alert(`Please fill all fields for component ${i + 1}`);
         return;
       }
-      const imp = parseInt(importance);
-      const con = parseInt(connection);
       if (
-        isNaN(imp) ||
-        imp < 1 ||
-        imp > 5 ||
-        isNaN(con) ||
-        con < 1 ||
-        con > 5
+        importance < 1 ||
+        importance > 5 ||
+        connection < 1 ||
+        connection > 5
       ) {
-        alert(
-          `For component ${
-            i + 1
-          }, "Importance" and "Connection" must be numbers between 1 and 5.`
-        );
+        alert(`Component ${i + 1}: Values must be between 1-5`);
         return;
       }
     }
     setStep("summary");
   };
 
-  const handleRestart = () => {
-    // Optionally, restart the conversation
-    setStep("intro");
-    setObjectName("");
-    setComponentCount("");
-    setComponentDetails([]);
+  const handleCreateChildren = async () => {
+    try {
+      const children = componentDetails.map((detail, index) => ({
+        id: Date.now() + index,
+        name: detail.name,
+        attributes: {
+          importance: parseInt(detail.importance),
+          connection: parseInt(detail.connection),
+        },
+        children: [],
+        parent: parseInt(parentId), // Ensure parentId is number
+      }));
+
+      await axios.post(
+        `http://localhost:8000/api/projects/${projectId}/nodes`,
+        {
+          parentId: parseInt(parentId),
+          children: children,
+        }
+      );
+      setStep("exit");
+    } catch (error) {
+      alert("Failed to create children nodes");
+      console.error("Error details:", error.response?.data);
+    }
   };
 
-  // Render the current step
-  const renderStep = () => {
+  const renderDecisionStep = () => {
     switch (step) {
       case "intro":
         return (
-          <div className="chat-step">
-            <p className="chat-text">{introMessage}</p>
-            <div className="chat-actions">
+          <div className="p-4 bg-white rounded-lg m-4 shadow-md">
+            <p className="text-gray-700 mb-4">{introMessage}</p>
+            <div className="flex gap-2">
               <button
-                className="chat-btn bg-blue-500"
-                onClick={() => setStep("continue")}
+                className="bg-blue-600 text-black px-4 py-2 rounded-lg hover:bg-blue-700"
+                onClick={() => setStep("objectName")}
               >
-                Continue
+                Start Evaluation
               </button>
             </div>
           </div>
         );
-      case "continue":
-        return (
-          <div className="chat-step">
-            <p className="chat-text">Do you want to continue?</p>
-            <div className="chat-actions">
-              <button
-                className="chat-btn bg-green-500"
-                onClick={() => handleContinue("yes")}
-              >
-                Yes
-              </button>
-              <button
-                className="chat-btn bg-red-500"
-                onClick={() => handleContinue("no")}
-              >
-                No
-              </button>
-            </div>
-          </div>
-        );
+
       case "objectName":
         return (
-          <div className="chat-step">
-            <p className="chat-text">
-              What is the name of the object you want to evaluate? (e.g., car,
-              home, job, school, hotel, etc.)
-            </p>
+          <div className="p-4 bg-white rounded-lg m-4 shadow-md">
             <input
               type="text"
               value={objectName}
               onChange={(e) => setObjectName(e.target.value)}
-              className="chat-input"
               placeholder="Enter object name"
+              className="border p-2 rounded-lg w-full mb-2"
             />
-            <div className="chat-actions">
-              <button
-                className="chat-btn bg-blue-500"
-                onClick={handleObjectNameSubmit}
-              >
-                Submit
-              </button>
-            </div>
+            <button
+              className="bg-blue-600 text-black px-4 py-2 rounded-lg hover:bg-blue-700"
+              onClick={() => setStep("componentCount")}
+            >
+              Continue
+            </button>
           </div>
         );
+
       case "componentCount":
         return (
-          <div className="chat-step">
-            <p className="chat-text">
-              How many components do you want to define? (Enter 0 if none, or a
-              number between 2 and 5)
-            </p>
+          <div className="p-4 bg-white rounded-lg m-4 shadow-md">
             <input
               type="number"
               value={componentCount}
               onChange={(e) => setComponentCount(e.target.value)}
-              className="chat-input"
-              placeholder="Enter number of components"
+              placeholder="Number of components (0, 2-5)"
+              className="border p-2 rounded-lg w-full mb-2"
             />
-            <div className="chat-actions">
-              <button
-                className="chat-btn bg-blue-500"
-                onClick={handleComponentCountSubmit}
-              >
-                Submit
-              </button>
-            </div>
+            <button
+              className="bg-blue-600 text-black px-4 py-2 rounded-lg hover:bg-blue-700"
+              onClick={handleComponentCountSubmit}
+            >
+              Continue
+            </button>
           </div>
         );
+
       case "componentDetails":
         return (
-          <div className="chat-step">
-            <p className="chat-text mb-4">Enter details for each component:</p>
-            <table className="chat-table">
-              <thead>
-                <tr>
-                  <th>Component Name</th>
-                  <th>Importance (1-5)</th>
-                  <th>Connection (1-5)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {componentDetails.map((comp, index) => (
-                  <tr key={index}>
-                    <td>
-                      <input
-                        type="text"
-                        value={comp.name}
-                        onChange={(e) =>
-                          handleComponentDetailChange(
-                            index,
-                            "name",
-                            e.target.value
-                          )
-                        }
-                        className="chat-table-input"
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="number"
-                        value={comp.importance}
-                        onChange={(e) =>
-                          handleComponentDetailChange(
-                            index,
-                            "importance",
-                            e.target.value
-                          )
-                        }
-                        className="chat-table-input"
-                        min="1"
-                        max="5"
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="number"
-                        value={comp.connection}
-                        onChange={(e) =>
-                          handleComponentDetailChange(
-                            index,
-                            "connection",
-                            e.target.value
-                          )
-                        }
-                        className="chat-table-input"
-                        min="1"
-                        max="5"
-                      />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <div className="chat-actions">
-              <button
-                className="chat-btn bg-blue-500"
-                onClick={handleComponentDetailsSubmit}
-              >
-                Next
-              </button>
-            </div>
+          <div className="p-4 bg-white rounded-lg m-4 shadow-md">
+            <h3 className="text-lg font-semibold mb-4">Component Details</h3>
+            {componentDetails.map((comp, index) => (
+              <div key={index} className="mb-4">
+                <input
+                  type="text"
+                  placeholder="Component name"
+                  value={comp.name}
+                  onChange={(e) =>
+                    handleComponentDetailChange(index, "name", e.target.value)
+                  }
+                  className="border p-2 rounded-lg w-full mb-2"
+                />
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    min="1"
+                    max="5"
+                    placeholder="Importance (1-5)"
+                    value={comp.importance}
+                    onChange={(e) =>
+                      handleComponentDetailChange(
+                        index,
+                        "importance",
+                        e.target.value
+                      )
+                    }
+                    className="border p-2 rounded-lg w-1/2"
+                  />
+                  <input
+                    type="number"
+                    min="1"
+                    max="5"
+                    placeholder="Connection (1-5)"
+                    value={comp.connection}
+                    onChange={(e) =>
+                      handleComponentDetailChange(
+                        index,
+                        "connection",
+                        e.target.value
+                      )
+                    }
+                    className="border p-2 rounded-lg w-1/2"
+                  />
+                </div>
+              </div>
+            ))}
+            <button
+              className="bg-blue-600 text-black px-4 py-2 rounded-lg hover:bg-blue-700"
+              onClick={handleComponentDetailsSubmit}
+            >
+              Continue
+            </button>
           </div>
         );
+
       case "summary":
         return (
-          <div className="chat-step">
-            <h2 className="text-xl font-bold mb-2">Summary</h2>
-            <p>
-              <strong>Object Name:</strong> {objectName}
+          <div className="p-4 bg-white rounded-lg m-4 shadow-md">
+            <h3 className="text-lg font-semibold mb-4">Summary</h3>
+            <p className="mb-2">
+              <strong>Object:</strong> {objectName}
             </p>
-            <p>
-              <strong>Components:</strong>
-            </p>
-            <ul className="chat-list">
-              {componentDetails.map((comp, index) => (
-                <li key={index}>
+            <div className="mb-4">
+              {componentDetails.map((comp, i) => (
+                <div key={i} className="mb-2">
                   {comp.name} - Importance: {comp.importance}, Connection:{" "}
                   {comp.connection}
-                </li>
+                </div>
               ))}
-            </ul>
-            <div className="chat-actions">
-              <button className="chat-btn bg-green-500" onClick={handleRestart}>
-                Restart
-              </button>
             </div>
+            <button
+              className="bg-green-600 text-black px-4 py-2 rounded-lg hover:bg-green-700"
+              onClick={handleCreateChildren}
+            >
+              Create Components
+            </button>
           </div>
         );
+
       case "exit":
         return (
-          <div className="chat-step">
-            <p className="chat-text">Goodbye!</p>
+          <div className="p-4 bg-green-100 text-green-800 rounded-lg m-4">
+            {exitMessage}
           </div>
         );
+
       default:
         return null;
     }
   };
 
-  return <div className="DEMA-container">{renderStep()}</div>;
+  return (
+    <div className="w-full h-full bg-gradient-to-b from-indigo-50 to-blue-50 rounded-lg shadow-xl flex flex-col">
+      {/* Header */}
+      <div className="flex items-center gap-2 mb-4 p-4 border-b border-blue-100 bg-black/80">
+        <div
+          className={`relative w-8 h-8 rounded-full flex items-center justify-center 
+          ${
+            isLoading
+              ? "bg-blue-200"
+              : "bg-gradient-to-br from-blue-600 to-indigo-500"
+          }`}
+        >
+          {isLoading && (
+            <div className="absolute inset-0 border-2 border-t-transparent rounded-full animate-spin" />
+          )}
+        </div>
+        <h3 className="text-lg font-semibold text-gray-800">DEMA</h3>
+      </div>
+
+      {renderDecisionStep()}
+
+      <div
+        className="flex-1 bg-gray/20 p-3 overflow-y-auto"
+        style={{ maxHeight: "300px" }}
+      >
+        {messages.map((message, index) => (
+          <div
+            key={index}
+            className={`flex ${
+              message.isBot ? "justify-start" : "justify-end"
+            } mb-3`}
+          >
+            <div
+              className={`max-w-[80%] p-3 rounded-lg transition-all duration-150 ${
+                message.isBot
+                  ? "bg-pink text-gray-800 shadow-sm border"
+                  : "bg-gradient-to-br from-blue-600 to-indigo-500 text-black shadow-lg"
+              }`}
+            >
+              <p className="text-sm">{message.text}</p>
+              <p
+                className={`text-xs mt-1 ${
+                  message.isBot ? "text-gray-500/80" : "text-blue-100/90"
+                }`}
+              >
+                {format(message.timestamp, "HH:mm")}
+              </p>
+            </div>
+          </div>
+        ))}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {step === "intro" && (
+        <div className="p-4 border-t border-blue-100 bg-blue/80">
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Type your message..."
+              className="flex-1 border rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300/50 focus:border-blue-400 transition-all bg-blue/90"
+              disabled={isLoading}
+            />
+            <button
+              onClick={handleSendMessage}
+              className="px-4 py-2 bg-gradient-to-br from-blue-600 to-indigo-500 text-black rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-all duration-200 hover:scale-[1.02] shadow-md"
+              disabled={isLoading || !inputValue.trim()}
+            >
+              {isLoading ? "Sending..." : "Send"}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default Dema;
