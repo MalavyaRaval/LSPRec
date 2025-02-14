@@ -179,29 +179,11 @@ const Dema = () => {
             <div className="flex gap-2">
               <button
                 className="bg-blue-600 text-black px-4 py-2 rounded-lg hover:bg-blue-700"
-                onClick={() => setStep("objectName")}
+                onClick={() => setStep("componentCount")}
               >
                 Start Evaluation
               </button>
             </div>
-          </div>
-        );
-      case "objectName":
-        return (
-          <div className="p-4 bg-white rounded-lg m-4 shadow-md">
-            <input
-              type="text"
-              value={objectName}
-              onChange={(e) => setObjectName(e.target.value)}
-              placeholder="Enter object name"
-              className="border p-2 rounded-lg w-full mb-2"
-            />
-            <button
-              className="bg-blue-600 text-black px-4 py-2 rounded-lg hover:bg-blue-700"
-              onClick={() => setStep("componentCount")}
-            >
-              Continue
-            </button>
           </div>
         );
       case "componentCount":

@@ -115,21 +115,6 @@ const TreeNode = ({
             Edit
           </button>
           <button
-            className="btn-option bg-green-500 text-black px-3 py-1 rounded hover:bg-green-600 transition"
-            onClick={() =>
-              handleOptionClick(() => {
-                setShowAddChildInput(true);
-                setChildName("");
-              })
-            }
-            disabled={node.children.length >= 5}
-            title={
-              node.children.length >= 5 ? "Maximum 5 children allowed" : ""
-            }
-          >
-            Add Child
-          </button>
-          <button
             className="btn-option bg-purple-500 text-black px-3 py-1 rounded hover:bg-purple-600 transition"
             onClick={() => handleOptionClick(handleAddWithDEMA)}
             disabled={node.children.length >= 5}
