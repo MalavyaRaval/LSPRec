@@ -28,7 +28,10 @@ const App = () => {
           element={<ProjectPage />}
         />
         <Route path="/dema" element={<Dema />} />
-        <Route path="/validation/:projectId" element={<Projectvalidation />} />
+        <Route
+          path="/user/:username/project/:projectname/validation"
+          element={<Projectvalidation />} // Replace <Validation /> with your actual validation component
+        />
       </Routes>
     </Router>
   );

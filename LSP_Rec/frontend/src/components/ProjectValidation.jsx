@@ -2,10 +2,9 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 
-// Recursive helper to flatten the tree into an array.
-// Here we exclude the root node (assumed to have parent === null).
 const flattenTree = (node) => {
   let nodes = [];
+  // Exclude the root if desired (i.e. if root.parent is null)
   if (node.parent !== null) {
     nodes.push(node);
   }
@@ -18,7 +17,16 @@ const flattenTree = (node) => {
 };
 
 const Validation = () => {
-  const { projectId } = useParams();
+  // Get username and projectname from the route parameters
+  const { username, projectname } = useParams();
+  // Compute projectId using the same slug rules as when creating the project
+  const projectId = projectname
+    ? projectname
+        .toLowerCase()
+        .replace(/\s+/g, "-")
+        .replace(/[^\w-]+/g, "")
+    : null;
+
   const [treeData, setTreeData] = useState(null);
   const [flatNodes, setFlatNodes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -31,6 +39,7 @@ const Validation = () => {
           `http://localhost:8000/api/projects/${projectId}`
         );
         setTreeData(response.data);
+        // Flatten the tree (exclude the root if needed)
         const flattened = flattenTree(response.data);
         setFlatNodes(flattened);
       } catch (err) {
@@ -39,7 +48,13 @@ const Validation = () => {
         setLoading(false);
       }
     };
-    fetchTree();
+
+    if (projectId) {
+      fetchTree();
+    } else {
+      setError("Invalid project name");
+      setLoading(false);
+    }
   }, [projectId]);
 
   if (loading) {
@@ -66,10 +81,14 @@ const Validation = () => {
             <tr key={node.id} className="text-center">
               <td className="border px-4 py-2">{node.name}</td>
               <td className="border px-4 py-2">
-                {node.attributes?.importance ?? "-"}
+                {node.attributes?.importance !== null
+                  ? node.attributes.importance
+                  : "-"}
               </td>
               <td className="border px-4 py-2">
-                {node.attributes?.connection ?? "-"}
+                {node.attributes?.connection !== null
+                  ? node.attributes.connection
+                  : "-"}
               </td>
             </tr>
           ))}

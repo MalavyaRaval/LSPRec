@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { format } from "date-fns";
-import "../CSS/DEMA.css";
+import "../index.css";
 
 const Dema = () => {
   const location = useLocation();

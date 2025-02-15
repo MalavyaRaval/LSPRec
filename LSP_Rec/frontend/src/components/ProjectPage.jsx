@@ -4,7 +4,7 @@ import Navbar from "./Nav/Navbar";
 import Footer from "./Footer";
 import ProjectTree from "./ProjectTree";
 import Dema from "./DEMA.jsx";
-import "../CSS/projectpage.css";
+import "../index.css";
 
 const ProjectPage = () => {
   const { username, projectname } = useParams();
@@ -24,7 +24,8 @@ const ProjectPage = () => {
     if (action === "projects") {
       navigate("/home");
     } else if (action === "validation") {
-      navigate("/validation");
+      // Navigate to a dynamic route for validation using evaluatorName and projectname
+      navigate(`/user/${evaluatorName}/project/${projectname}/validation`);
     } else if (action === "exit") {
       navigate("/");
     } else {
