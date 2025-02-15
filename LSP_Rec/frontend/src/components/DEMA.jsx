@@ -78,8 +78,6 @@ const Dema = () => {
     if (e.key === "Enter" && !isLoading) handleSendMessage();
   };
 
-  // --- Component Flow Handlers ---
-
   // Create unique objects for each component using Array.from
   const handleComponentCountSubmit = () => {
     const count = parseInt(componentCount);
@@ -310,7 +308,7 @@ const Dema = () => {
             <div className="absolute inset-0 border-2 border-t-transparent rounded-full animate-spin" />
           )}
         </div>
-        <h3 className="text-lg font-semibold text-gray-800">DEMA</h3>
+        <h3 className="text-lg font-semibold text-white-800">DEMA</h3>
       </div>
 
       {renderDecisionStep()}
