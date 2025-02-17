@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { format } from "date-fns";
-import "../index.css";
 
 const Dema = () => {
   const location = useLocation();
@@ -19,7 +18,6 @@ const Dema = () => {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
 
-  // Decision-making states
   const [step, setStep] = useState("intro");
   const [objectName, setObjectName] = useState("");
   const [componentCount, setComponentCount] = useState("");

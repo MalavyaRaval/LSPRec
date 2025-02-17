@@ -1,10 +1,8 @@
 import axiosInstance from "./utils/axiosInstance";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import "../CSS/Login.css";
 import Navbar from "./Nav/Navbar";
 import Footer from "./Footer";
-
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -37,9 +35,11 @@ const Login = () => {
 
         // Ensure fullName is available in the response data
         if (response.data.fullName) {
-          // Save fullName to localStorage
           localStorage.setItem("fullName", response.data.fullName);
-          console.log("Full Name saved to LocalStorage:", response.data.fullName);
+          console.log(
+            "Full Name saved to LocalStorage:",
+            response.data.fullName
+          );
         } else {
           console.error("Full name not found in the response data.");
         }
@@ -61,56 +61,71 @@ const Login = () => {
   return (
     <>
       <Navbar />
-      <div className="page-container">
-        <div className="content-wrap">
-          <div className="form-container">
-            <h2>Login Page</h2>
-            {error && <p className="error">{error}</p>} {/* Display error message */}
-            <form className="row g-3" onSubmit={handleSubmit}>
-              <div className="col-md-12 mb-3">
-                <label htmlFor="inputEmail" className="form-label">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  className="form-control"
-                  id="inputEmail"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-              <div className="col-md-12 mb-3">
-                <label htmlFor="inputPassword" className="form-label">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  className="form-control"
-                  id="inputPassword"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
-              <div className="col-12">
-                <button type="submit" className="btn btn-primary">
-                  Login
-                </button>
-                <p className="text-sm text-center mt-4">
-                  Not Registered yet???{" "}
-                  <Link
-                    to="/signup"
-                    className="font-medium text-primary underline"
-                  >
-                    Create an Account
-                  </Link>
-                </p>
-              </div>
-            </form>
-          </div>
+      <div className="bg-gray-50 min-h-screen flex items-center justify-center">
+        <div className="bg-white p-8 rounded-lg shadow-lg max-w-sm w-full">
+          <h2 className="text-3xl font-semibold text-center text-blue-600 mb-6">
+            Login
+          </h2>
+
+          {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+
+          <form onSubmit={handleSubmit}>
+            <div className="mb-4">
+              <label
+                htmlFor="inputEmail"
+                className="block text-lg font-medium text-gray-700"
+              >
+                Email
+              </label>
+              <input
+                type="email"
+                id="inputEmail"
+                className="w-full px-4 py-2 mt-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+
+            <div className="mb-6">
+              <label
+                htmlFor="inputPassword"
+                className="block text-lg font-medium text-gray-700"
+              >
+                Password
+              </label>
+              <input
+                type="password"
+                id="inputPassword"
+                className="w-full px-4 py-2 mt-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+
+            <div className="flex justify-between items-center">
+              <button
+                type="submit"
+                className="w-full py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition-colors duration-300"
+              >
+                Login
+              </button>
+            </div>
+
+            <p className="text-center text-sm text-gray-600 mt-4">
+              Not registered yet?{" "}
+              <Link
+                to="/signup"
+                className="font-medium text-blue-600 underline hover:text-blue-700"
+              >
+                Create an Account
+              </Link>
+            </p>
+          </form>
         </div>
-        <Footer />
       </div>
+      <Footer />
     </>
   );
 };

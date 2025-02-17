@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import "../CSS/SignUp.css";
 import { useNavigate } from "react-router-dom";
 import Navbar from "./Nav/Navbar";
 import Footer from "./Footer";
@@ -60,7 +59,6 @@ const states = [
 
 const SignUp = () => {
   const navigate = useNavigate();
-
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -71,16 +69,15 @@ const SignUp = () => {
     zip: "",
   });
 
+  const [error, setError] = useState(null);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  const [error, setError] = useState(null);
-
   const handleSignUp = async (event) => {
     event.preventDefault();
-
     const { name, email, password, address, city, state, zip } = formData;
 
     if (!name || !email || !password || !address || !city || !state || !zip) {
@@ -122,128 +119,173 @@ const SignUp = () => {
   };
 
   return (
-    <div className="page-container">
+    <>
       <Navbar />
-      <div className="content-wrap">
-        <div className="full-height">
-          <div className="form-container">
-            <form className="mb-3" onSubmit={handleSignUp}>
-              <label htmlFor="name">Name</label>
+      <div className="bg-gray-50 min-h-screen flex items-center justify-center">
+        <div className="bg-white p-8 rounded-lg shadow-lg max-w-lg w-full">
+          <h2 className="text-3xl font-semibold text-center text-blue-600 mb-6">
+            Sign Up
+          </h2>
+
+          {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+
+          <form onSubmit={handleSignUp}>
+            <div className="mb-4">
+              <label
+                htmlFor="name"
+                className="block text-lg font-medium text-gray-700"
+              >
+                Name
+              </label>
               <input
-                className="form-control mb-3"
                 type="text"
-                placeholder="Name"
+                id="name"
                 name="name"
+                placeholder="Full Name"
                 value={formData.name}
                 onChange={handleChange}
+                className="w-full px-4 py-2 mt-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
               />
-              <div className="row g-3">
-                <div className="col-md-6">
-                  <label htmlFor="inputEmail4" className="form-label">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    className="form-control"
-                    id="inputEmail4"
-                    placeholder="Email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                  />
-                </div>
-                <div className="col-md-6">
-                  <label htmlFor="inputPassword4" className="form-label">
-                    Password
-                  </label>
-                  <input
-                    type="password"
-                    className="form-control"
-                    id="inputPassword4"
-                    placeholder="Password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                  />
-                </div>
-                <div className="col-12">
-                  <label htmlFor="inputAddress" className="form-label">
-                    Address
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    id="inputAddress"
-                    name="address"
-                    placeholder="1234 Main St"
-                    value={formData.address}
-                    onChange={handleChange}
-                  />
-                </div>
-                <div className="col-md-6">
-                  <label htmlFor="inputCity" className="form-label">
-                    City
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    id="inputCity"
-                    name="city"
-                    placeholder="City"
-                    value={formData.city}
-                    onChange={handleChange}
-                  />
-                </div>
-                <div className="col-md-4">
-                  <label htmlFor="inputState" className="form-label">
-                    State
-                  </label>
-                  <select
-                    id="inputState"
-                    className="form-select"
-                    placeholder="State"
-                    name="state"
-                    value={formData.state}
-                    onChange={handleChange}
-                  >
-                    <option defaultValue>Choose...</option>
-                    {states.map((state) => (
-                      <option key={state} value={state}>
-                        {state}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="col-md-2">
-                  <label htmlFor="inputZip" className="form-label">
-                    Zip
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    id="inputZip"
-                    name="zip"
-                    placeholder="Zip"
-                    value={formData.zip}
-                    onChange={handleChange}
-                  />
-                </div>
-                {error && <p className="dev-modi">{error}</p>}
-                <div className="col-12">
-                  <button type="submit" className="btn btn-primary">
-                    Sign Up
-                  </button>
-                </div>
+            </div>
+
+            <div className="mb-4">
+              <label
+                htmlFor="email"
+                className="block text-lg font-medium text-gray-700"
+              >
+                Email
+              </label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                placeholder="Email"
+                value={formData.email}
+                onChange={handleChange}
+                className="w-full px-4 py-2 mt-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
+              />
+            </div>
+
+            <div className="mb-4">
+              <label
+                htmlFor="password"
+                className="block text-lg font-medium text-gray-700"
+              >
+                Password
+              </label>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                placeholder="Password"
+                value={formData.password}
+                onChange={handleChange}
+                className="w-full px-4 py-2 mt-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
+              />
+            </div>
+
+            <div className="mb-4">
+              <label
+                htmlFor="address"
+                className="block text-lg font-medium text-gray-700"
+              >
+                Address
+              </label>
+              <input
+                type="text"
+                id="address"
+                name="address"
+                placeholder="1234 Main St"
+                value={formData.address}
+                onChange={handleChange}
+                className="w-full px-4 py-2 mt-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
+              />
+            </div>
+
+            <div className="flex space-x-4 mb-4">
+              <div className="w-1/2">
+                <label
+                  htmlFor="city"
+                  className="block text-lg font-medium text-gray-700"
+                >
+                  City
+                </label>
+                <input
+                  type="text"
+                  id="city"
+                  name="city"
+                  placeholder="City"
+                  value={formData.city}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 mt-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
+                />
               </div>
-            </form>
-            <p>
-              Already have an account? <a href="/login">Login</a>
+
+              <div className="w-1/2">
+                <label
+                  htmlFor="state"
+                  className="block text-lg font-medium text-gray-700"
+                >
+                  State
+                </label>
+                <select
+                  id="state"
+                  name="state"
+                  value={formData.state}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 mt-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
+                >
+                  <option value="">Select State</option>
+                  {states.map((state) => (
+                    <option key={state} value={state}>
+                      {state}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <label
+                htmlFor="zip"
+                className="block text-lg font-medium text-gray-700"
+              >
+                Zip Code
+              </label>
+              <input
+                type="text"
+                id="zip"
+                name="zip"
+                placeholder="Zip Code"
+                value={formData.zip}
+                onChange={handleChange}
+                className="w-full px-4 py-2 mt-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
+              />
+            </div>
+
+            <div className="mb-4">
+              <button
+                type="submit"
+                className="w-full py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition-colors duration-300"
+              >
+                Sign Up
+              </button>
+            </div>
+
+            <p className="text-center text-sm text-gray-600 mt-4">
+              Already have an account?{" "}
+              <a
+                href="/login"
+                className="font-medium text-blue-600 underline hover:text-blue-700"
+              >
+                Login
+              </a>
             </p>
-          </div>
+          </form>
         </div>
       </div>
       <Footer />
-    </div>
+    </>
   );
 };
 

@@ -5,7 +5,6 @@ import Footer from "./Footer";
 import ProjectTree from "./ProjectTree";
 import Dema from "./DEMA.jsx";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
-// import "../index.css";
 
 const ProjectPage = () => {
   const { username, projectname } = useParams();
@@ -21,8 +20,7 @@ const ProjectPage = () => {
   const storedFullName = localStorage.getItem("fullName")?.trim();
   const evaluatorName = storedFullName || username || "defaultUser";
 
-  // Manage scale state
-  const [scale, setScale] = useState(1); // Default scale is 1 (normal size)
+  const [scale, setScale] = useState(1);
 
   const handleNav = (action) => {
     if (action === "projects") {
@@ -46,7 +44,7 @@ const ProjectPage = () => {
         <div className="flex items-center justify-between bg-white dark:bg-gray-800 shadow-md p-3 rounded mb-4">
           <div className="flex items-center gap-2">
             <span className="text-lg font-semibold text-gray-900 dark:text-gray-900">
-              LSP Rec
+              LSP Rec Project with DEMA
             </span>
           </div>
           <div className="flex items-center gap-4">
