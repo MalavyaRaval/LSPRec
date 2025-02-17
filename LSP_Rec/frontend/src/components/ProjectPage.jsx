@@ -87,7 +87,15 @@ const ProjectPage = () => {
           style={{ minHeight: "calc(100vh - 200px)" }}
         >
           {/* Project Tree Container */}
-          <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden p-4">
+          <div
+            className="relative bg-gray-900 dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden p-4"
+            style={{
+              minHeight: "calc(100vh - 200px)",
+              backgroundImage:
+                "radial-gradient(circle, #d1d5db 1px, transparent 1px)",
+              backgroundSize: "20px 20px", // Adjust the grid size as needed
+            }}
+          >
             <div className="absolute inset-2 flex items-center justify-center">
               <TransformWrapper
                 initialScale={scale} // Use scale state for initial scale
@@ -116,7 +124,6 @@ const ProjectPage = () => {
                         />
                       </div>
                     </TransformComponent>
-                    {/* Optional: Remove reset button or keep it if desired */}
 
                     <button
                       className="absolute bottom-4 right-4 px-3 py-2 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-600 z-50"

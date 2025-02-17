@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import "../../CSS/navbar.css";
 
 const Navbar = () => {
   const [burger_class, setBurgerClass] = useState("burger-bar unclicked");
@@ -12,7 +11,6 @@ const Navbar = () => {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      // Check if click is outside both menu and burger button
       if (
         isMenuClicked &&
         !menuRef.current?.contains(event.target) &&
@@ -22,12 +20,10 @@ const Navbar = () => {
       }
     };
 
-    // Add listener when menu is open
     if (isMenuClicked) {
       document.addEventListener("click", handleClickOutside);
     }
 
-    // Cleanup
     return () => {
       document.removeEventListener("click", handleClickOutside);
     };
@@ -50,54 +46,84 @@ const Navbar = () => {
   };
 
   return (
-    <div className="navbar-container">
-      <nav className="flex items-center justify-between bg-gray-800 p-4">
+    <div className="navbar-container relative">
+      <nav className="w-full h-20 bg-gradient-to-r from-indigo-600 via-blue-500 to-purple-500 flex justify-between items-center px-6 shadow-lg">
         {/* Left Side - Burger Menu */}
-        <div className="flex items-center">
+        <div
+          className="burger-menu w-16 h-full flex flex-col justify-center items-start cursor-pointer lg:hidden"
+          onClick={updateMenu}
+          ref={burgerRef}
+        >
           <div
-            className="burger-menu mr-4"
-            onClick={updateMenu}
-            ref={burgerRef}
-          >
-            <div className={burger_class}></div>
-            <div className={burger_class}></div>
-            <div className={burger_class}></div>
-          </div>
+            className={`${burger_class} w-6 h-1 bg-white mb-1 transition-all duration-300 ease-in-out`}
+          ></div>
+          <div
+            className={`${burger_class} w-6 h-1 bg-white mb-1 transition-all duration-300 ease-in-out`}
+          ></div>
+          <div
+            className={`${burger_class} w-6 h-1 bg-white transition-all duration-300 ease-in-out`}
+          ></div>
         </div>
 
         {/* Center - Website Name */}
-        <h1 className="text-white text-xl font-bold">LSP Rec</h1>
+        <h1 className="text-white text-xl font-extrabold absolute left-1/2 transform -translate-x-1/2">
+          LSP Rec
+        </h1>
 
         {/* Right Side - Profile Button */}
-        <div className="hidden md:block">
+        <div className="hidden lg:block">
           <a
             href="/myprofile"
-            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded transition-colors"
+            className="bg-blue-500 text-white px-6 py-3 rounded-lg transition-colors hover:bg-blue-600 transform hover:scale-105"
           >
             My Profile
           </a>
         </div>
       </nav>
 
-      <div className={menu_class} ref={menuRef}>
-        <ul>
+      {/* Mobile Menu - Slide In from the Right */}
+      <div
+        className={`${menu_class} fixed top-0 right-0 w-64 h-full bg-white shadow-xl transform transition-all duration-300 ease-in-out z-50`}
+        ref={menuRef}
+      >
+        <ul className="list-none p-5 space-y-4 text-gray-900">
           <li>
-            <a href="/home">Home</a>
+            <a href="/home" className="hover:text-blue-500 transition-colors">
+              Home
+            </a>
           </li>
           <li>
-            <a href="/login">Login</a>
+            <a href="/login" className="hover:text-blue-500 transition-colors">
+              Login
+            </a>
           </li>
           <li>
-            <a href="/signup">Sign Up</a>
+            <a href="/signup" className="hover:text-blue-500 transition-colors">
+              Sign Up
+            </a>
           </li>
           <li>
-            <a href="/aboutus">About Us</a>
+            <a
+              href="/aboutus"
+              className="hover:text-blue-500 transition-colors"
+            >
+              About Us
+            </a>
           </li>
           <li>
-            <a href="/myprofile">My Profile</a>
+            <a
+              href="/myprofile"
+              className="hover:text-blue-500 transition-colors"
+            >
+              My Profile
+            </a>
           </li>
           <li>
-            <a href="#" onClick={handleSignOut}>
+            <a
+              href="#"
+              onClick={handleSignOut}
+              className="hover:text-blue-500 transition-colors"
+            >
               Sign Out
             </a>
           </li>
