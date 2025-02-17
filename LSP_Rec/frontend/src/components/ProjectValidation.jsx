@@ -1,10 +1,11 @@
+// src/components/Validation.jsx
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 
+// Helper function to flatten the tree into an array (excluding the root)
 const flattenTree = (node) => {
   let nodes = [];
-  // Exclude the root if desired (i.e. if root.parent is null)
   if (node.parent !== null) {
     nodes.push(node);
   }
@@ -17,9 +18,9 @@ const flattenTree = (node) => {
 };
 
 const Validation = () => {
-  // Get username and projectname from the route parameters
+  // Extract username and projectname from URL parameters
   const { username, projectname } = useParams();
-  // Compute projectId using the same slug rules as when creating the project
+  // Compute projectId (same as in your ProjectPage)
   const projectId = projectname
     ? projectname
         .toLowerCase()
@@ -39,7 +40,6 @@ const Validation = () => {
           `http://localhost:8000/api/projects/${projectId}`
         );
         setTreeData(response.data);
-        // Flatten the tree (exclude the root if needed)
         const flattened = flattenTree(response.data);
         setFlatNodes(flattened);
       } catch (err) {
@@ -60,11 +60,9 @@ const Validation = () => {
   if (loading) {
     return <div className="p-4">Loading...</div>;
   }
-
   if (error) {
     return <div className="p-4 text-red-500">{error}</div>;
   }
-
   return (
     <div className="p-4">
       <h2 className="text-2xl font-bold mb-4">Validation</h2>
@@ -81,14 +79,10 @@ const Validation = () => {
             <tr key={node.id} className="text-center">
               <td className="border px-4 py-2">{node.name}</td>
               <td className="border px-4 py-2">
-                {node.attributes?.importance !== null
-                  ? node.attributes.importance
-                  : "-"}
+                {node.attributes?.importance ?? "-"}
               </td>
               <td className="border px-4 py-2">
-                {node.attributes?.connection !== null
-                  ? node.attributes.connection
-                  : "-"}
+                {node.attributes?.connection ?? "-"}
               </td>
             </tr>
           ))}

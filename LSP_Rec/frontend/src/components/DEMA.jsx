@@ -173,7 +173,7 @@ const Dema = () => {
       case "intro":
         return (
           <div className="p-4 bg-white rounded-lg m-4 shadow-md">
-            <p className="text-gray-700 mb-4">{introMessage}</p>
+            <p className="text-black-700 mb-4">{introMessage}</p>
             <div className="flex gap-2">
               <button
                 className="bg-blue-600 text-black px-4 py-2 rounded-lg hover:bg-blue-700"
@@ -334,7 +334,7 @@ const Dema = () => {
               <p className="text-sm">{message.text}</p>
               <p
                 className={`text-xs mt-1 ${
-                  message.isBot ? "text-gray-500/80" : "text-blue-100/90"
+                  message.isBot ? "text-pink-500/80" : "text-blue-100/90"
                 }`}
               >
                 {format(message.timestamp, "HH:mm")}
