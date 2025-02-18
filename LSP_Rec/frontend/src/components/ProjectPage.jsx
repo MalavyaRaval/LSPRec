@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "./Nav/Navbar";
 import Footer from "./Footer";
 import ProjectTree from "./ProjectTree";
-import Dema from "./DEMA.jsx";
+import DemaChat from "./DemaChat.jsx";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 
 const ProjectPage = () => {
@@ -91,20 +91,20 @@ const ProjectPage = () => {
               minHeight: "calc(100vh - 200px)",
               backgroundImage:
                 "radial-gradient(circle, #d1d5db 1px, transparent 1px)",
-              backgroundSize: "20px 20px", // Adjust the grid size as needed
+              backgroundSize: "20px 20px",
             }}
           >
             <div className="absolute inset-2 flex items-center justify-center">
               <TransformWrapper
-                initialScale={scale} // Use scale state for initial scale
+                initialScale={scale}
                 centerOnInit={true}
-                wheel={{ step: 0.2 }} // Increase step value to make zooming faster
+                wheel={{ step: 0.2 }}
                 doubleClick={{ disabled: true }}
                 limitToBounds={false}
                 preservePosition={true}
-                minScale={0.25} // Optional: Set a minimum scale to prevent excessive zooming out
-                maxScale={1} // Optional: Set a maximum scale to prevent excessive zooming in
-                onScaleChange={({ scale }) => setScale(scale)} // Update scale when zooming
+                minScale={0.25}
+                maxScale={1}
+                onScaleChange={({ scale }) => setScale(scale)}
               >
                 {({ resetTransform }) => (
                   <>
@@ -134,15 +134,12 @@ const ProjectPage = () => {
               </TransformWrapper>
             </div>
           </div>
-
-          {/* Chat Assistant Section */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 h-[400px] overflow-hidden">
-            <Dema />
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 h-screen overflow-hidden">
+            <DemaChat />
           </div>
         </div>
       </div>
 
-      {/* Footer at the bottom */}
       <Footer />
     </div>
   );

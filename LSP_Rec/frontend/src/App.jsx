@@ -1,4 +1,3 @@
-// App.jsx
 import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import SignUp from "./components/SignUp.jsx";
@@ -11,6 +10,7 @@ import ProjectPage from "./components/ProjectPage.jsx";
 import Dema from "./components/DEMA.jsx";
 import ProjectTree from "./components/ProjectTree.jsx";
 import Projectvalidation from "./components/ProjectValidation.jsx";
+import DemaChat from "./components/DemaChat";
 
 const App = () => {
   return (
@@ -30,8 +30,9 @@ const App = () => {
         <Route path="/dema" element={<Dema />} />
         <Route
           path="/user/:username/project/:projectname/validation"
-          element={<Projectvalidation />} // Replace <Validation /> with your actual validation component
+          element={<Projectvalidation />}
         />
+        <Route path="/dema-chat" element={<DemaChat />} />
       </Routes>
     </Router>
   );

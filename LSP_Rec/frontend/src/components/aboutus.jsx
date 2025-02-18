@@ -15,7 +15,6 @@ const AboutUs = () => {
           About Us
         </h1>
         <div className="flex flex-col lg:flex-row items-center justify-center gap-10">
-          {/* Profile Section */}
           <div className="flex flex-col items-center bg-white rounded-lg shadow-xl p-6 max-w-sm lg:max-w-md w-full">
             <img
               src={malavyaRavalImage}
