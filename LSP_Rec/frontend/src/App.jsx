@@ -11,6 +11,7 @@ import Dema from "./components/DEMA.jsx";
 import ProjectTree from "./components/ProjectTree.jsx";
 import Projectvalidation from "./components/ProjectValidation.jsx";
 import DemaChat from "./components/DemaChat";
+import ValuesPage from "./components/ValuesPage.jsx";
 
 const App = () => {
   return (
@@ -33,6 +34,7 @@ const App = () => {
           element={<Projectvalidation />}
         />
         <Route path="/dema-chat" element={<DemaChat />} />
+        <Route path="/values" element={<ValuesPage />} />
       </Routes>
     </Router>
   );

@@ -53,6 +53,14 @@ const TreeNode = ({
     action();
   };
 
+  const handleAddLeafValues = () => {
+    if (projectId && username && projectname && node && node.id) {
+      navigate(
+        `/values?projectId=${projectId}&parentId=${node.id}&username=${username}&projectname=${projectname}&add=values`
+      );
+    }
+  };
+
   const handleAddWithDEMA = () => {
     if (projectId && username && projectname) {
       navigate(
@@ -132,6 +140,15 @@ const TreeNode = ({
               }
             >
               Add with DEMA
+            </button>
+            <button
+              className={`px-4 py-2 bg-green-500 text-white rounded-lg shadow-lg hover:bg-green-600 transition-colors whitespace-nowrap ${
+                node.children && node.children.length === 0 ? "" : "hidden"
+              }`}
+              onClick={() => handleOptionClick(handleAddLeafValues)}
+              disabled={node.children && node.children.length > 0}
+            >
+              Add Values
             </button>
           </div>
         )}
