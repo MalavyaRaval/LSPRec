@@ -1,15 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "./Nav/Navbar";
 import Footer from "./Footer";
 import ProjectTree from "./ProjectTree";
 import DemaChat from "./DemaChat.jsx";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
+import axios from "axios";
 
 const ProjectPage = () => {
   const { username, projectname } = useParams();
   const navigate = useNavigate();
 
+  // Convert projectname to a slug for use as projectId.
   const projectSlug = projectname
     ? projectname
         .toLowerCase()
@@ -20,7 +22,30 @@ const ProjectPage = () => {
   const storedFullName = localStorage.getItem("fullName")?.trim();
   const evaluatorName = storedFullName || username || "defaultUser";
 
+  // State for project display name (from the project tree root's "name")
+  const [projectDisplayName, setProjectDisplayName] = useState("");
+
+  // State for scale (for zoom/drag features)
   const [scale, setScale] = useState(1);
+
+  useEffect(() => {
+    if (projectSlug) {
+      axios
+        .get(`http://localhost:8000/api/projects/${projectSlug}`)
+        .then((res) => {
+          // Assume the returned tree's root node's name is the project display name.
+          if (res.data && res.data.name) {
+            setProjectDisplayName(res.data.name);
+          } else {
+            setProjectDisplayName(projectname);
+          }
+        })
+        .catch((err) => {
+          console.error("Error loading project name:", err);
+          setProjectDisplayName(projectname);
+        });
+    }
+  }, [projectSlug, projectname]);
 
   const handleNav = (action) => {
     if (action === "projects") {
@@ -75,66 +100,61 @@ const ProjectPage = () => {
             <strong>User:</strong> {evaluatorName}
           </p>
           <p className="text-lg text-gray-700 dark:text-gray-300">
-            <strong>Project:</strong> {projectname?.toUpperCase() || "N/A"}
+            <strong>Project:</strong>{" "}
+            {projectDisplayName ||
+              (projectname ? projectname.toUpperCase() : "N/A")}
           </p>
         </div>
 
-        {/* Modified Main Content Area */}
-        <div
-          className="grid grid-cols-1 lg:grid-cols-[1fr_384px] gap-4"
-          style={{ minHeight: "calc(100vh - 200px)" }}
-        >
+        {/* Main Content Area (Vertical Stack) */}
+        <div className="flex flex-col gap-6">
           {/* Project Tree Container */}
           <div
             className="relative bg-gray-900 dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden p-4"
             style={{
-              minHeight: "calc(100vh - 200px)",
+              minHeight: "400px",
               backgroundImage:
                 "radial-gradient(circle, #d1d5db 1px, transparent 1px)",
               backgroundSize: "20px 20px",
             }}
           >
-            <div className="absolute inset-2 flex items-center justify-center">
-              <TransformWrapper
-                initialScale={scale}
-                centerOnInit={true}
-                wheel={{ step: 0.2 }}
-                doubleClick={{ disabled: true }}
-                limitToBounds={false}
-                preservePosition={true}
-                minScale={0.25}
-                maxScale={1}
-                onScaleChange={({ scale }) => setScale(scale)}
-              >
-                {({ resetTransform }) => (
-                  <>
-                    <TransformComponent
-                      wrapperStyle={{
-                        width: "100%",
-                        height: "100%",
-                      }}
-                    >
-                      <div className="w-full h-full flex items-center justify-center">
-                        <ProjectTree
-                          projectId={projectSlug}
-                          username={evaluatorName}
-                          projectname={projectname}
-                        />
-                      </div>
-                    </TransformComponent>
-
-                    <button
-                      className="absolute bottom-4 right-4 px-3 py-2 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-600 z-50"
-                      onClick={() => resetTransform()}
-                    >
-                      Reset View
-                    </button>
-                  </>
-                )}
-              </TransformWrapper>
-            </div>
+            <TransformWrapper
+              initialScale={scale}
+              centerOnInit={true}
+              wheel={{ step: 0.2 }}
+              doubleClick={{ disabled: true }}
+              limitToBounds={false}
+              preservePosition={true}
+              minScale={0.25}
+              maxScale={1}
+              onScaleChange={({ scale }) => setScale(scale)}
+            >
+              {({ resetTransform }) => (
+                <>
+                  <TransformComponent
+                    wrapperStyle={{ width: "100%", height: "100%" }}
+                  >
+                    <div className="w-full h-full flex items-center justify-center">
+                      <ProjectTree
+                        projectId={projectSlug}
+                        username={evaluatorName}
+                        projectname={projectname}
+                      />
+                    </div>
+                  </TransformComponent>
+                  <button
+                    className="absolute bottom-4 right-4 px-3 py-2 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-600 z-50"
+                    onClick={() => resetTransform()}
+                  >
+                    Reset View
+                  </button>
+                </>
+              )}
+            </TransformWrapper>
           </div>
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 h-screen overflow-hidden">
+
+          {/* Dema Chat Container */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4">
             <DemaChat />
           </div>
         </div>

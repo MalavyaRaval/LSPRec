@@ -12,6 +12,10 @@ import ProjectTree from "./components/ProjectTree.jsx";
 import Projectvalidation from "./components/ProjectValidation.jsx";
 import DemaChat from "./components/DemaChat";
 import ValuesPage from "./components/ValuesPage.jsx";
+import Query4 from "./components/Query4.jsx";
+import Query5 from "./components/Query5.jsx";
+import Query6 from "./components/Query6.jsx";
+import Query7 from "./components/Query7.jsx";
 
 const App = () => {
   return (
@@ -33,8 +37,15 @@ const App = () => {
           path="/user/:username/project/:projectname/validation"
           element={<Projectvalidation />}
         />
-        <Route path="/dema-chat" element={<DemaChat />} />
+        <Route
+          path="/user/:username/project/:projectname/dema-chat"
+          element={<DemaChat />}
+        />
         <Route path="/values" element={<ValuesPage />} />
+        <Route path="/q4" element={<Query4 />} />
+        <Route path="/q5" element={<Query5 />} />
+        <Route path="/q6" element={<Query6 />} />
+        <Route path="/q7" element={<Query7 />} />
       </Routes>
     </Router>
   );

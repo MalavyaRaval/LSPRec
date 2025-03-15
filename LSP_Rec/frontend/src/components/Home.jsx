@@ -5,6 +5,8 @@ import Footer from "./Footer";
 import defaultImage from "../images/symbol.jpg";
 import axiosInstance from "./utils/axiosInstance";
 import ToastMessage from "./ToastMessage";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap/dist/js/bootstrap.bundle.min.js";
 
 const Home = () => {
   const [events, setEvents] = useState([]);
